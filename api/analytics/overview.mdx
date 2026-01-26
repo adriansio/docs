@@ -1,0 +1,101 @@
+---
+title: 'Analytics Overview'
+description: 'Retrieve widget analytics data'
+---
+
+Access analytics data for your store locator widget.
+
+<Note>
+  Analytics API is coming soon. Currently, analytics are available in the dashboard under **Analytics**.
+</Note>
+
+## Dashboard Analytics
+
+The StoreRocket dashboard provides comprehensive analytics:
+
+### Overview Metrics
+- Total widget loads
+- Search queries
+- Location clicks
+- Directions requests
+
+### Geographic Data
+- Searches by region
+- Search heatmap
+- Coverage analysis
+
+### Location Performance
+- Views per location
+- Clicks per location
+- Direction requests per location
+
+### Search Intelligence
+- Popular search terms
+- Zero-result searches (expansion opportunities)
+- Search patterns over time
+
+Go to **Dashboard → Analytics** to view your data.
+
+## Upcoming API Endpoints
+
+The following endpoints will be available soon:
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v2/projects/{id}/analytics/overview` | Summary metrics |
+| `GET` | `/api/v2/projects/{id}/analytics/searches` | Search analytics |
+| `GET` | `/api/v2/projects/{id}/analytics/locations` | Per-location metrics |
+| `GET` | `/api/v2/projects/{id}/analytics/geographic` | Geographic data |
+
+### Planned Query Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `start_date` | Start of date range (ISO 8601) |
+| `end_date` | End of date range (ISO 8601) |
+| `granularity` | `day`, `week`, or `month` |
+| `timezone` | Timezone for date grouping |
+
+### Example (Coming Soon)
+
+```bash
+curl -X GET "https://api.storerocket.io/api/v2/projects/{project_id}/analytics/overview?start_date=2024-01-01&end_date=2024-01-31" \
+  -H "X-API-Key: your_api_key"
+```
+
+```json
+{
+  "data": {
+    "period": {
+      "start": "2024-01-01",
+      "end": "2024-01-31"
+    },
+    "metrics": {
+      "widget_loads": 15420,
+      "searches": 8934,
+      "location_clicks": 3217,
+      "direction_clicks": 1456,
+      "phone_clicks": 892
+    },
+    "top_searches": [
+      { "query": "Seattle", "count": 234 },
+      { "query": "Portland", "count": 189 }
+    ],
+    "top_locations": [
+      { "id": "abc123", "name": "Downtown Seattle", "clicks": 456 },
+      { "id": "def456", "name": "Bellevue", "clicks": 321 }
+    ]
+  }
+}
+```
+
+## Export Data
+
+For now, you can export analytics data as CSV from the dashboard:
+
+1. Go to **Dashboard → Analytics**
+2. Select your date range
+3. Click **Export** (top right)
+4. Choose CSV format
+
+[Contact us](mailto:support@storerocket.io) if you need API access sooner.

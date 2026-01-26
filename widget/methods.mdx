@@ -1,0 +1,288 @@
+---
+title: 'Methods'
+description: 'Control the widget programmatically'
+---
+
+After initializing the widget, you can call methods to control it programmatically.
+
+## Getting the Widget Instance
+
+```js
+const widget = await StoreRocket.create({
+  account: 'abc123',
+  container: '#locator'
+});
+
+// Now you can call methods
+widget.search('New York');
+```
+
+---
+
+## Search Methods
+
+### search(query, options?)
+
+Perform a search programmatically.
+
+```js
+// Simple search
+widget.search('New York');
+
+// Search with options
+widget.search('90210', {
+  radius: 25,
+  unit: 'miles'
+});
+
+// Search from coordinates
+widget.search({ lat: 40.7128, lng: -74.0060 });
+```
+
+<ParamField path="query" type="string | {lat, lng}">
+  Search query (address, zip code, city) or coordinates object.
+</ParamField>
+
+<ParamField path="options.radius" type="number">
+  Override search radius.
+</ParamField>
+
+<ParamField path="options.unit" type="string">
+  Override distance unit (`miles` or `kilometers`).
+</ParamField>
+
+### clearSearch()
+
+Clear the search input and reset results.
+
+```js
+widget.clearSearch();
+```
+
+---
+
+## Filter Methods
+
+### setFilters(filters)
+
+Set active filters programmatically.
+
+```js
+// Set specific filters
+widget.setFilters(['drive-through', 'open-24-hours']);
+
+// Clear all filters
+widget.setFilters([]);
+```
+
+<ParamField path="filters" type="string[]">
+  Array of filter slugs to activate.
+</ParamField>
+
+### getFilters()
+
+Get currently active filters.
+
+```js
+const activeFilters = widget.getFilters();
+// ['drive-through', 'wheelchair-accessible']
+```
+
+### toggleFilter(slug)
+
+Toggle a single filter on/off.
+
+```js
+widget.toggleFilter('drive-through');
+```
+
+---
+
+## Location Methods
+
+### selectLocation(id)
+
+Select and show details for a specific location.
+
+```js
+// By location ID
+widget.selectLocation('abc123');
+
+// By slug
+widget.selectLocation('downtown-seattle');
+```
+
+### deselectLocation()
+
+Close the location detail panel.
+
+```js
+widget.deselectLocation();
+```
+
+### getLocations()
+
+Get all loaded locations.
+
+```js
+const locations = widget.getLocations();
+console.log(`Total locations: ${locations.length}`);
+```
+
+### getVisibleLocations()
+
+Get locations currently visible on the map.
+
+```js
+const visible = widget.getVisibleLocations();
+console.log(`Visible: ${visible.length}`);
+```
+
+---
+
+## Map Methods
+
+### setCenter(lat, lng, zoom?)
+
+Pan the map to coordinates.
+
+```js
+widget.setCenter(40.7128, -74.0060);
+
+// With zoom level
+widget.setCenter(40.7128, -74.0060, 12);
+```
+
+### fitBounds(locations?)
+
+Fit the map to show all locations (or specific ones).
+
+```js
+// Fit all locations
+widget.fitBounds();
+
+// Fit specific locations
+widget.fitBounds([location1, location2]);
+```
+
+### getMap()
+
+Get the underlying map instance (Google Maps or Mapbox GL).
+
+```js
+const map = widget.getMap();
+
+// Check provider
+if (widget.getMapProvider() === 'google') {
+  // Google Maps API
+  map.setMapTypeId('satellite');
+} else {
+  // Mapbox GL JS
+  map.setStyle('mapbox://styles/mapbox/satellite-v9');
+}
+```
+
+### getMapProvider()
+
+Returns `'google'` or `'mapbox'`.
+
+```js
+const provider = widget.getMapProvider();
+```
+
+---
+
+## Event Methods
+
+### on(event, handler)
+
+Subscribe to an event.
+
+```js
+widget.on('locationSelect', (location) => {
+  console.log('Selected:', location.name);
+});
+```
+
+### off(event, handler)
+
+Unsubscribe from an event.
+
+```js
+const handler = (location) => console.log(location);
+
+widget.on('locationSelect', handler);
+// Later...
+widget.off('locationSelect', handler);
+```
+
+---
+
+## Lifecycle Methods
+
+### destroy()
+
+Clean up and remove the widget.
+
+```js
+widget.destroy();
+```
+
+<Warning>
+  After calling `destroy()`, the widget instance is no longer usable. Create a new one if needed.
+</Warning>
+
+---
+
+## Example: External Search Form
+
+Control the widget from your own search form:
+
+```html
+<form id="store-search">
+  <input type="text" name="location" placeholder="Enter city or zip">
+  <button type="submit">Find Stores</button>
+</form>
+
+<div id="locator" style="height: 600px;"></div>
+
+<script>
+  let widget;
+
+  StoreRocket.create({
+    account: 'abc123',
+    container: '#locator',
+    features: { search: false } // Hide built-in search
+  }).then(w => widget = w);
+
+  document.getElementById('store-search').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const query = e.target.location.value;
+    widget.search(query);
+  });
+</script>
+```
+
+## Example: Filter Buttons
+
+Create custom filter buttons outside the widget:
+
+```html
+<div class="filter-buttons">
+  <button data-filter="drive-through">Drive-Through</button>
+  <button data-filter="open-24-hours">24 Hours</button>
+  <button data-filter="wheelchair-accessible">Accessible</button>
+</div>
+
+<script>
+  document.querySelectorAll('[data-filter]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const filter = btn.dataset.filter;
+      widget.toggleFilter(filter);
+
+      // Update button state
+      btn.classList.toggle('active', widget.getFilters().includes(filter));
+    });
+  });
+</script>
+```

@@ -1,0 +1,216 @@
+---
+title: 'Custom Markers'
+description: 'Customize map marker appearance'
+---
+
+Markers are configured in your StoreRocket dashboard under **Widget → Markers**. This page covers advanced marker customization via JavaScript.
+
+## Dashboard Configuration
+
+The easiest way to customize markers:
+
+1. Go to **Widget → Markers** in your dashboard
+2. Choose from the marker library or upload custom SVG/PNG
+3. Set colors, size, and style
+4. Changes apply to all widgets automatically
+
+---
+
+## Marker Types
+
+### Default Marker
+
+Uses your dashboard marker settings. No configuration needed.
+
+### Per-Location Markers
+
+Assign different markers to locations based on:
+- **Location Type** (e.g., Flagship, Partner, Pop-up)
+- **Filters** (e.g., Drive-through gets a car icon)
+- **Custom Field** (e.g., Premium locations)
+
+Configure this in **Dashboard → Markers → Assignment Rules**.
+
+---
+
+## JavaScript Customization
+
+For dynamic marker customization:
+
+```js
+StoreRocket.create({
+  account: 'abc123',
+  container: '#locator',
+  callbacks: {
+    getMarkerIcon: (location, isSelected) => {
+      // Return custom marker configuration
+      return {
+        url: location.custom_fields?.premium
+          ? '/markers/premium.svg'
+          : '/markers/default.svg',
+        size: isSelected ? [48, 48] : [32, 32],
+        anchor: [16, 32] // Bottom center
+      };
+    }
+  }
+});
+```
+
+### Marker Icon Options
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `url` | `string` | URL to marker image (SVG, PNG, etc.) |
+| `size` | `[width, height]` | Marker size in pixels |
+| `anchor` | `[x, y]` | Anchor point (where marker points to) |
+| `className` | `string` | CSS class for the marker element |
+
+---
+
+## SVG Markers
+
+SVG markers scale perfectly and support dynamic colors:
+
+```js
+callbacks: {
+  getMarkerIcon: (location, isSelected) => {
+    const color = isSelected ? '#7C3AED' : '#6B7280';
+
+    return {
+      html: `
+        <svg width="32" height="40" viewBox="0 0 32 40" fill="none">
+          <path d="M16 0C7.16 0 0 7.16 0 16c0 12 16 24 16 24s16-12 16-24C32 7.16 24.84 0 16 0z" fill="${color}"/>
+          <circle cx="16" cy="14" r="6" fill="white"/>
+        </svg>
+      `,
+      size: [32, 40],
+      anchor: [16, 40]
+    };
+  }
+}
+```
+
+---
+
+## Cluster Markers
+
+Customize cluster appearance:
+
+```js
+StoreRocket.create({
+  account: 'abc123',
+  container: '#locator',
+  callbacks: {
+    getClusterIcon: (count, locations) => {
+      const size = count > 100 ? 50 : count > 10 ? 40 : 32;
+
+      return {
+        html: `
+          <div style="
+            width: ${size}px;
+            height: ${size}px;
+            background: #7C3AED;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: ${size / 3}px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+          ">${count}</div>
+        `,
+        size: [size, size],
+        anchor: [size / 2, size / 2]
+      };
+    }
+  }
+});
+```
+
+---
+
+## Selected State
+
+Markers can have different appearances when selected:
+
+```js
+callbacks: {
+  getMarkerIcon: (location, isSelected) => {
+    if (isSelected) {
+      return {
+        url: '/markers/selected.svg',
+        size: [48, 56],
+        anchor: [24, 56]
+      };
+    }
+
+    return {
+      url: '/markers/default.svg',
+      size: [32, 40],
+      anchor: [16, 40]
+    };
+  }
+}
+```
+
+---
+
+## Marker Animation
+
+Add animation to markers:
+
+```css
+/* In your stylesheet */
+.sr-marker {
+  transition: transform 0.2s ease;
+}
+
+.sr-marker:hover {
+  transform: scale(1.1);
+}
+
+.sr-marker-selected {
+  animation: bounce 0.5s ease;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+```
+
+---
+
+## Performance Tips
+
+<Warning>
+  With many locations (500+), complex markers can impact performance.
+</Warning>
+
+**Best practices:**
+
+1. **Use simple SVGs** - Fewer paths = faster rendering
+2. **Optimize images** - Use WebP or compressed PNGs
+3. **Enable clustering** - Reduces marker count at low zoom
+4. **Cache marker icons** - Return the same object for similar locations
+
+```js
+// Good: Cache marker configs
+const markerCache = new Map();
+
+callbacks: {
+  getMarkerIcon: (location, isSelected) => {
+    const key = `${location.type}-${isSelected}`;
+
+    if (!markerCache.has(key)) {
+      markerCache.set(key, {
+        url: `/markers/${location.type}.svg`,
+        size: isSelected ? [48, 48] : [32, 32]
+      });
+    }
+
+    return markerCache.get(key);
+  }
+}
+```

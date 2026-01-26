@@ -1,0 +1,55 @@
+---
+title: 'Create Filter'
+description: 'Add a new filter'
+api: 'POST /api/v2/projects/{project_id}/filters'
+---
+
+<Note>
+  Direct filter creation via API is coming soon. See [List Filters](/api/filters/list) for current options.
+</Note>
+
+## Creating Filters via Locations
+
+The recommended way to create filters programmatically is to include them when creating locations:
+
+```bash
+curl -X POST "https://api.storerocket.io/api/v2/projects/{project_id}/locations" \
+  -H "X-API-Key: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Example Store",
+    "address_line_1": "123 Main St",
+    "city": "Seattle",
+    "filters": "My New Filter, Another Filter"
+  }'
+```
+
+Filters are automatically created if they don't exist, with:
+- **Name:** As provided
+- **Slug:** Auto-generated from name (lowercase, hyphens)
+
+## Upcoming API
+
+When available, the create filter endpoint will work like this:
+
+```bash
+curl -X POST "https://api.storerocket.io/api/v2/projects/{project_id}/filters" \
+  -H "X-API-Key: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Drive-Through",
+    "slug": "drive-through",
+    "icon": "car"
+  }'
+```
+
+### Planned Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | string | Display name (required) |
+| `slug` | string | URL-friendly identifier (auto-generated if not provided) |
+| `icon` | string | Icon name from icon library |
+| `category_id` | string | Filter category ID |
+
+[Contact us](mailto:support@storerocket.io) if you need this sooner.

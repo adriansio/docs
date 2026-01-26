@@ -1,0 +1,128 @@
+---
+title: 'Introduction'
+description: 'Programmatically manage your StoreRocket locations'
+---
+
+The StoreRocket REST API lets you manage locations, filters, and retrieve analytics programmatically.
+
+## Base URL
+
+```
+https://api.storerocket.io
+```
+
+## Authentication
+
+All requests require an API key passed in the `X-API-Key` header:
+
+```bash
+curl -X GET "https://api.storerocket.io/api/v2/projects/{project_id}/locations" \
+  -H "X-API-Key: your_api_key"
+```
+
+Get your API key from **Dashboard → Developer → API Keys**.
+
+<Warning>
+  Keep your API key secret. Don't expose it in client-side code.
+</Warning>
+
+---
+
+## Request Format
+
+- **Content-Type:** `application/json` for POST/PUT requests
+- **Accept:** `application/json`
+
+```bash
+curl -X POST "https://api.storerocket.io/api/v2/projects/{project_id}/locations" \
+  -H "X-API-Key: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Downtown Store",
+    "address_line_1": "123 Main St",
+    "city": "Seattle"
+  }'
+```
+
+---
+
+## Response Format
+
+All responses are JSON:
+
+```json
+{
+  "data": {
+    "id": "abc123",
+    "name": "Downtown Store",
+    "address": "123 Main St, Seattle, WA 98101"
+  }
+}
+```
+
+Paginated responses include metadata:
+
+```json
+{
+  "data": [...],
+  "meta": {
+    "current_page": 1,
+    "last_page": 5,
+    "per_page": 15,
+    "total": 73
+  },
+  "links": {
+    "first": "https://api.storerocket.io/api/v2/.../locations?page=1",
+    "last": "https://api.storerocket.io/api/v2/.../locations?page=5",
+    "prev": null,
+    "next": "https://api.storerocket.io/api/v2/.../locations?page=2"
+  }
+}
+```
+
+---
+
+## API Versions
+
+| Version | Status | Notes |
+|---------|--------|-------|
+| V2 | **Current** | Full CRUD for locations |
+| V1 | Deprecated | Use V2 for new integrations |
+
+---
+
+## Rate Limits
+
+| Plan | Requests/minute |
+|------|-----------------|
+| Starter | 60 |
+| Galaxy | 120 |
+| Supernova | 300 |
+| Cosmos | 600 |
+
+Rate limit headers are included in responses:
+
+```
+X-RateLimit-Limit: 120
+X-RateLimit-Remaining: 115
+X-RateLimit-Reset: 1609459200
+```
+
+---
+
+## Quick Links
+
+<CardGroup cols={2}>
+  <Card title="Authentication" icon="key" href="/api/authentication">
+    API key setup and security.
+  </Card>
+  <Card title="Locations" icon="location-dot" href="/api/locations/list">
+    CRUD operations for locations.
+  </Card>
+  <Card title="Filters" icon="filter" href="/api/filters/list">
+    Manage location filters.
+  </Card>
+  <Card title="Errors" icon="triangle-exclamation" href="/api/errors">
+    Error codes and handling.
+  </Card>
+</CardGroup>

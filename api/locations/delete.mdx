@@ -1,0 +1,70 @@
+---
+title: 'Delete Location'
+description: 'Remove a location'
+api: 'DELETE /api/v2/projects/{project_id}/locations/{location_id}'
+---
+
+Permanently deletes a location.
+
+## Request
+
+```bash
+curl -X DELETE "https://api.storerocket.io/api/v2/projects/{project_id}/locations/{location_id}" \
+  -H "X-API-Key: your_api_key"
+```
+
+## Path Parameters
+
+<ParamField path="project_id" type="string" required>
+  Your project's hashid.
+</ParamField>
+
+<ParamField path="location_id" type="string" required>
+  The location's hashid.
+</ParamField>
+
+## Response
+
+```json
+{
+  "success": true
+}
+```
+
+## Notes
+
+<Warning>
+  This action is permanent. Deleted locations cannot be recovered.
+</Warning>
+
+- Associated data (hours, custom field values, filter assignments) is also deleted
+- Images uploaded to the location remain in your media library
+- Analytics data for the location is preserved
+
+## Errors
+
+| Status | Description |
+|--------|-------------|
+| `404` | Location not found |
+| `401` | Invalid API key |
+
+## Bulk Delete
+
+To delete multiple locations, make separate DELETE requests:
+
+```javascript
+const locationIds = ['abc123', 'def456', 'ghi789'];
+
+await Promise.all(
+  locationIds.map(id =>
+    fetch(`https://api.storerocket.io/api/v2/projects/${projectId}/locations/${id}`, {
+      method: 'DELETE',
+      headers: { 'X-API-Key': apiKey }
+    })
+  )
+);
+```
+
+<Note>
+  Respect rate limits when deleting many locations. Consider spacing requests or upgrading your plan for higher limits.
+</Note>

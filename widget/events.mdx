@@ -1,0 +1,391 @@
+---
+title: 'Events'
+description: 'Hook into widget interactions with event handlers'
+---
+
+Listen to widget events to integrate with your application, track analytics, or customize behavior.
+
+## Listening to Events
+
+### Via Configuration
+
+```js
+StoreRocket.create({
+  account: 'abc123',
+  container: '#locator',
+  on: {
+    ready: (widget) => {
+      console.log('Widget is ready');
+    },
+    locationSelect: (location, source) => {
+      console.log('User selected:', location.name);
+    }
+  }
+});
+```
+
+### After Initialization
+
+```js
+const widget = await StoreRocket.create({
+  account: 'abc123',
+  container: '#locator'
+});
+
+widget.on('locationSelect', (location) => {
+  // Send to analytics
+  gtag('event', 'store_select', {
+    store_name: location.name,
+    store_id: location.id
+  });
+});
+```
+
+---
+
+## Lifecycle Events
+
+<ParamField path="on.init" type="() => void">
+  Widget starting to initialize.
+</ParamField>
+
+<ParamField path="on.ready" type="(widget) => void">
+  Widget fully loaded and rendered. The `widget` instance is passed.
+
+  ```js
+  on: {
+    ready: (widget) => {
+      console.log('Widget ready, locations loaded');
+      // widget.search('New York');
+    }
+  }
+  ```
+</ParamField>
+
+<ParamField path="on.destroy" type="() => void">
+  Widget being destroyed/cleaned up.
+</ParamField>
+
+<ParamField path="on.error" type="(error, context) => void">
+  Any error occurred during widget operation.
+
+  ```js
+  on: {
+    error: (error, context) => {
+      console.error('Widget error:', error.message, context);
+      // Report to error tracking service
+    }
+  }
+  ```
+</ParamField>
+
+---
+
+## Data Events
+
+<ParamField path="on.configLoad" type="(config) => void">
+  Configuration fetched from API.
+</ParamField>
+
+<ParamField path="on.locationsLoad" type="(locations) => void">
+  Location data loaded. Useful for getting location count.
+
+  ```js
+  on: {
+    locationsLoad: (locations) => {
+      console.log(`Loaded ${locations.length} locations`);
+    }
+  }
+  ```
+</ParamField>
+
+---
+
+## Search Events
+
+<ParamField path="on.searchStart" type="(query) => void">
+  User started typing in search input.
+</ParamField>
+
+<ParamField path="on.searchSubmit" type="(query) => void">
+  User submitted a search (pressed Enter or selected suggestion).
+</ParamField>
+
+<ParamField path="on.searchComplete" type="(query, results, meta) => void">
+  Search finished with results.
+
+  ```js
+  on: {
+    searchComplete: (query, results, meta) => {
+      console.log(`Found ${results.length} results for "${query}"`);
+      // meta includes: { center, radius, totalMatches }
+    }
+  }
+  ```
+</ParamField>
+
+<ParamField path="on.searchClear" type="() => void">
+  Search input cleared.
+</ParamField>
+
+<ParamField path="on.searchNoResults" type="(query, meta) => void">
+  Search returned zero results. Great for tracking demand.
+
+  ```js
+  on: {
+    searchNoResults: (query, meta) => {
+      // Track searches with no results
+      analytics.track('store_search_empty', { query });
+    }
+  }
+  ```
+</ParamField>
+
+<ParamField path="on.autocompleteSelect" type="(suggestion) => void">
+  User selected an autocomplete suggestion.
+</ParamField>
+
+<ParamField path="on.radiusChange" type="(radius, unit, previousRadius) => void">
+  User changed search radius.
+</ParamField>
+
+---
+
+## Geolocation Events
+
+<ParamField path="on.geolocateStart" type="(method) => void">
+  "Find my location" clicked. `method` is `'gps'` or `'ip'`.
+</ParamField>
+
+<ParamField path="on.geolocateSuccess" type="(coords, method) => void">
+  Got user's location.
+
+  ```js
+  on: {
+    geolocateSuccess: (coords, method) => {
+      console.log(`Located user via ${method}:`, coords);
+      // coords = { lat, lng, accuracy }
+    }
+  }
+  ```
+</ParamField>
+
+<ParamField path="on.geolocateError" type="(error, method) => void">
+  Geolocation failed or was denied.
+</ParamField>
+
+---
+
+## Filter Events
+
+<ParamField path="on.filterSelect" type="(filter, activeFilters) => void">
+  Single filter toggled ON.
+</ParamField>
+
+<ParamField path="on.filterDeselect" type="(filter, activeFilters) => void">
+  Single filter toggled OFF.
+</ParamField>
+
+<ParamField path="on.filterChange" type="(activeFilters, previousFilters) => void">
+  Any filter state change. Best for tracking.
+
+  ```js
+  on: {
+    filterChange: (activeFilters, previousFilters) => {
+      analytics.track('filters_changed', {
+        filters: activeFilters.map(f => f.slug)
+      });
+    }
+  }
+  ```
+</ParamField>
+
+<ParamField path="on.filterClear" type="(previousFilters) => void">
+  All filters cleared.
+</ParamField>
+
+---
+
+## Location Events
+
+<ParamField path="on.locationSelect" type="(location, source) => void">
+  Location selected (from list, map marker, or URL). Most important event for tracking.
+
+  ```js
+  on: {
+    locationSelect: (location, source) => {
+      // source = 'list' | 'marker' | 'url' | 'autocomplete'
+      analytics.track('store_selected', {
+        store_id: location.id,
+        store_name: location.name,
+        source: source
+      });
+    }
+  }
+  ```
+</ParamField>
+
+<ParamField path="on.locationDeselect" type="(location, source) => void">
+  Location detail panel closed.
+</ParamField>
+
+<ParamField path="on.locationHover" type="(location, source) => void">
+  Mouse entered location (list item or marker).
+</ParamField>
+
+<ParamField path="on.locationHoverEnd" type="(location, source) => void">
+  Mouse left location.
+</ParamField>
+
+<ParamField path="on.visibleLocationsChange" type="(visible, total, context) => void">
+  Visible locations changed (map moved, filter applied, etc).
+</ParamField>
+
+---
+
+## Map Events
+
+<ParamField path="on.mapReady" type="(map, provider) => void">
+  Map instance ready. Access the underlying Google Maps or Mapbox GL instance.
+
+  ```js
+  on: {
+    mapReady: (map, provider) => {
+      if (provider === 'google') {
+        // map is google.maps.Map instance
+      } else {
+        // map is mapboxgl.Map instance
+      }
+    }
+  }
+  ```
+</ParamField>
+
+<ParamField path="on.mapMove" type="(center, bounds) => void">
+  Map is being panned.
+</ParamField>
+
+<ParamField path="on.mapMoveEnd" type="(center, bounds, zoom) => void">
+  Map stopped moving.
+</ParamField>
+
+<ParamField path="on.mapZoom" type="(zoom, previousZoom) => void">
+  Zoom level changed.
+</ParamField>
+
+<ParamField path="on.mapClick" type="(latlng, event) => void">
+  Clicked on map (not on a marker).
+</ParamField>
+
+<ParamField path="on.markerClick" type="(location, marker) => void">
+  Clicked on a location marker.
+</ParamField>
+
+<ParamField path="on.clusterClick" type="(locations, center, zoom) => void">
+  Clicked on a cluster marker.
+</ParamField>
+
+<ParamField path="on.boundsChange" type="(bounds, previousBounds) => void">
+  Visible map bounds changed.
+</ParamField>
+
+<ParamField path="on.fullscreenEnter" type="() => void">
+  Entered fullscreen mode.
+</ParamField>
+
+<ParamField path="on.fullscreenExit" type="() => void">
+  Exited fullscreen mode.
+</ParamField>
+
+---
+
+## Action Events
+
+<ParamField path="on.directionsClick" type="(location, provider) => void">
+  Directions link clicked.
+
+  ```js
+  on: {
+    directionsClick: (location, provider) => {
+      analytics.track('get_directions', {
+        store: location.name,
+        provider: provider // 'google' | 'apple' | 'waze'
+      });
+    }
+  }
+  ```
+</ParamField>
+
+<ParamField path="on.phoneClick" type="(location, phone) => void">
+  Phone number clicked.
+</ParamField>
+
+<ParamField path="on.websiteClick" type="(location, url) => void">
+  Website link clicked.
+</ParamField>
+
+<ParamField path="on.emailClick" type="(location, email) => void">
+  Email link clicked.
+</ParamField>
+
+<ParamField path="on.ctaClick" type="(location, cta) => void">
+  Custom CTA button clicked.
+
+  ```js
+  on: {
+    ctaClick: (location, cta) => {
+      if (cta.type === 'book') {
+        // Open booking modal
+        openBookingFor(location);
+      }
+    }
+  }
+  ```
+</ParamField>
+
+---
+
+## Google Analytics Example
+
+Track all important events to GA4:
+
+```js
+StoreRocket.create({
+  account: 'abc123',
+  container: '#locator',
+  on: {
+    searchComplete: (query, results) => {
+      gtag('event', 'store_search', {
+        search_term: query,
+        results_count: results.length
+      });
+    },
+
+    searchNoResults: (query) => {
+      gtag('event', 'store_search_empty', {
+        search_term: query
+      });
+    },
+
+    locationSelect: (location, source) => {
+      gtag('event', 'store_select', {
+        store_name: location.name,
+        store_id: location.id,
+        selection_source: source
+      });
+    },
+
+    directionsClick: (location) => {
+      gtag('event', 'store_directions', {
+        store_name: location.name
+      });
+    },
+
+    phoneClick: (location) => {
+      gtag('event', 'store_call', {
+        store_name: location.name
+      });
+    }
+  }
+});
+```

@@ -1,0 +1,353 @@
+---
+title: 'Configuration Options'
+description: 'Full reference for widget configuration'
+---
+
+Configure the widget using data attributes on the HTML element, or pass options to `StoreRocket.create()`.
+
+## Required Options
+
+<ParamField path="account" type="string" required>
+  Your project's hashid. Find it in **Settings → Embed Code**.
+</ParamField>
+
+<ParamField path="container" type="string | HTMLElement" required>
+  CSS selector or DOM element where the widget renders.
+</ParamField>
+
+---
+
+## Theme
+
+<ParamField path="theme" type="string" default="aurora">
+  Visual theme for the widget.
+
+  | Value | Description |
+  |-------|-------------|
+  | `aurora` | Modern, clean design with purple accents |
+  | `nebula` | Dark mode with vibrant gradients |
+  | `eclipse` | Minimal, high-contrast design |
+  | `starter` | Basic theme for maximum customization |
+</ParamField>
+
+**Data attribute:** `data-theme="nebula"`
+
+---
+
+## Map Options
+
+<ParamField path="map.provider" type="string" default="null">
+  Map provider. `null` uses your dashboard setting.
+
+  | Value | Description |
+  |-------|-------------|
+  | `google` | Google Maps |
+  | `mapbox` | Mapbox GL |
+</ParamField>
+
+<ParamField path="map.apiKey" type="string">
+  Google Maps API key. Overrides dashboard setting.
+</ParamField>
+
+<ParamField path="map.accessToken" type="string">
+  Mapbox access token. Overrides dashboard setting.
+</ParamField>
+
+<ParamField path="map.style" type="string | object">
+  Custom map style. JSON object or URL to style JSON.
+</ParamField>
+
+<ParamField path="map.center" type="object">
+  Initial map center. `{ lat: number, lng: number }`
+</ParamField>
+
+<ParamField path="map.zoom" type="number">
+  Initial zoom level (1-20).
+</ParamField>
+
+<ParamField path="map.scrollZoom" type="boolean" default="true">
+  Enable scroll wheel zoom.
+</ParamField>
+
+<ParamField path="map.animation" type="boolean" default="true">
+  Enable smooth pan/zoom animations.
+</ParamField>
+
+<ParamField path="map.controls" type="object">
+  Map control visibility.
+
+  ```js
+  map: {
+    controls: {
+      zoom: true,        // Zoom buttons
+      fullscreen: false, // Fullscreen button
+      geolocation: true, // "Find my location" button
+      mapType: false,    // Satellite/roadmap toggle
+      scale: false,      // Scale indicator
+      streetView: false  // Street View pegman (Google only)
+    }
+  }
+  ```
+</ParamField>
+
+**Data attributes:**
+```html
+data-map="mapbox"
+data-zoom="12"
+data-center="40.7128,-74.0060"
+```
+
+---
+
+## Search Options
+
+<ParamField path="search.radius" type="number" default="50">
+  Default search radius.
+</ParamField>
+
+<ParamField path="search.unit" type="string" default="miles">
+  Distance unit: `miles` or `kilometers`
+</ParamField>
+
+<ParamField path="search.limit" type="number" default="100">
+  Maximum results to return.
+</ParamField>
+
+<ParamField path="search.countries" type="string[]" default="[]">
+  Restrict autocomplete to specific countries. Use ISO 3166-1 alpha-2 codes.
+
+  ```js
+  search: {
+    countries: ['US', 'CA', 'MX']
+  }
+  ```
+</ParamField>
+
+<ParamField path="search.prioritySorting" type="boolean" default="false">
+  Sort by priority field instead of distance.
+</ParamField>
+
+**Data attributes:**
+```html
+data-radius="25"
+data-unit="kilometers"
+data-countries="US,CA"
+```
+
+---
+
+## Initial State
+
+<ParamField path="initialState.view" type="string" default="nearby">
+  What to show when the widget loads.
+
+  | Value | Description |
+  |-------|-------------|
+  | `nearby` | Geolocate user and show nearby locations |
+  | `all` | Show all locations, fit to bounds |
+  | `prompt` | Show empty map, wait for user search |
+</ParamField>
+
+<ParamField path="initialState.filters" type="string[]" default="[]">
+  Pre-select filters by slug.
+
+  ```js
+  initialState: {
+    filters: ['wheelchair-accessible', 'drive-through']
+  }
+  ```
+</ParamField>
+
+<ParamField path="initialState.location" type="string">
+  Open a specific location on load (by slug).
+</ParamField>
+
+**Data attributes:**
+```html
+data-initial-view="all"
+data-filters="wheelchair-accessible,drive-through"
+data-location="downtown-seattle"
+```
+
+---
+
+## Features
+
+Toggle widget features on/off:
+
+<ParamField path="features.clustering" type="boolean" default="true">
+  Group nearby markers into clusters.
+</ParamField>
+
+<ParamField path="features.filters" type="boolean" default="true">
+  Show filter chips/panel.
+</ParamField>
+
+<ParamField path="features.search" type="boolean" default="true">
+  Show search input.
+</ParamField>
+
+<ParamField path="features.geolocation" type="boolean" default="true">
+  Show "Find my location" button.
+</ParamField>
+
+<ParamField path="features.directions" type="boolean" default="true">
+  Show directions links.
+</ParamField>
+
+<ParamField path="features.hours" type="boolean" default="true">
+  Show business hours.
+</ParamField>
+
+<ParamField path="features.urlSync" type="boolean" default="false">
+  Sync widget state to URL parameters (search, filters, selected location).
+</ParamField>
+
+**Data attributes:**
+```html
+data-clustering="false"
+data-geolocation="false"
+data-url-sync="true"
+```
+
+---
+
+## Clustering
+
+<ParamField path="clustering.maxZoom" type="number" default="10">
+  Zoom level at which clustering stops. Higher values = cluster at more zoom levels.
+</ParamField>
+
+**Data attribute:** `data-cluster-max-zoom="12"`
+
+---
+
+## Filter Configuration
+
+<ParamField path="filtersConfig.selectionMode" type="string" default="multiple">
+  `single` or `multiple` filter selection.
+</ParamField>
+
+<ParamField path="filtersConfig.behavior" type="string" default="exclusive">
+  How multiple filters combine.
+
+  | Value | Description |
+  |-------|-------------|
+  | `exclusive` | AND logic - location must match ALL selected filters |
+  | `inclusive` | OR logic - location must match ANY selected filter |
+</ParamField>
+
+<ParamField path="filtersConfig.showIcons" type="boolean" default="false">
+  Show filter icons in the UI.
+</ParamField>
+
+---
+
+## Display Options
+
+<ParamField path="display.fitMarkersOnLoad" type="boolean" default="false">
+  Auto-fit map to show all markers on load.
+</ParamField>
+
+<ParamField path="display.showClusterCount" type="boolean" default="true">
+  Show location count on cluster markers.
+</ParamField>
+
+**Data attribute:** `data-fit-markers="true"`
+
+---
+
+## Links
+
+<ParamField path="links.openIn" type="string" default="new_tab">
+  How to open external links: `new_tab` or `same_tab`
+</ParamField>
+
+---
+
+## Language
+
+<ParamField path="language" type="string" default="null">
+  Force a specific language. `null` auto-detects from browser.
+
+  Supported: `en`, `es`, `fr`, `de`, `it`, `pt`, `nl`, `pl`, `ru`, `ja`, `ko`, `zh`, and [30+ more](/widget/localization).
+</ParamField>
+
+**Data attribute:** `data-language="es"`
+
+---
+
+## Advanced
+
+<ParamField path="debug" type="boolean" default="false">
+  Log debug info to console.
+</ParamField>
+
+<ParamField path="preview" type="boolean" default="false">
+  Disable analytics tracking (for testing).
+</ParamField>
+
+<ParamField path="api.baseUrl" type="string">
+  Override API base URL (for development).
+</ParamField>
+
+**Data attributes:**
+```html
+data-debug="true"
+data-preview="true"
+```
+
+---
+
+## Full Example
+
+```js
+StoreRocket.create({
+  account: 'abc123',
+  container: '#locator',
+  theme: 'aurora',
+
+  map: {
+    provider: 'mapbox',
+    zoom: 10,
+    center: { lat: 40.7128, lng: -74.0060 },
+    scrollZoom: true,
+    controls: {
+      zoom: true,
+      fullscreen: true,
+      geolocation: true
+    }
+  },
+
+  search: {
+    radius: 25,
+    unit: 'miles',
+    countries: ['US']
+  },
+
+  initialState: {
+    view: 'nearby',
+    filters: ['open-now']
+  },
+
+  features: {
+    clustering: true,
+    filters: true,
+    urlSync: true
+  },
+
+  clustering: {
+    maxZoom: 12
+  },
+
+  filtersConfig: {
+    selectionMode: 'multiple',
+    behavior: 'exclusive'
+  },
+
+  on: {
+    ready: (widget) => console.log('Ready'),
+    locationSelect: (location) => console.log('Selected:', location)
+  }
+});
+```

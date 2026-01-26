@@ -1,0 +1,233 @@
+---
+title: 'Styling'
+description: 'Customize the widget appearance'
+---
+
+The StoreRocket widget uses Shadow DOM for style isolation, but provides CSS custom properties for theming.
+
+## Themes
+
+Choose a built-in theme:
+
+```html
+<div data-storerocket="abc123" data-theme="aurora"></div>
+```
+
+| Theme | Description |
+|-------|-------------|
+| `aurora` | Modern, clean design with purple accents (default) |
+| `nebula` | Dark mode with vibrant gradients |
+| `eclipse` | Minimal, high-contrast design |
+| `starter` | Basic theme for maximum customization |
+
+---
+
+## CSS Custom Properties
+
+Override theme variables from your stylesheet:
+
+```css
+/* Target the widget container */
+[data-storerocket] {
+  /* Colors */
+  --sr-primary: #7C3AED;
+  --sr-primary-hover: #6D28D9;
+
+  /* Text */
+  --sr-text: #1F2937;
+  --sr-text-muted: #6B7280;
+
+  /* Backgrounds */
+  --sr-bg: #FFFFFF;
+  --sr-bg-secondary: #F9FAFB;
+
+  /* Borders */
+  --sr-border: #E5E7EB;
+  --sr-border-radius: 8px;
+
+  /* Shadows */
+  --sr-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --sr-shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
+
+  /* Typography */
+  --sr-font-family: system-ui, -apple-system, sans-serif;
+  --sr-font-size: 14px;
+
+  /* Spacing */
+  --sr-spacing: 16px;
+}
+```
+
+---
+
+## Dark Mode
+
+The `nebula` theme is dark by default. For other themes, you can force dark mode:
+
+```css
+[data-storerocket] {
+  --sr-bg: #111827;
+  --sr-bg-secondary: #1F2937;
+  --sr-text: #F9FAFB;
+  --sr-text-muted: #9CA3AF;
+  --sr-border: #374151;
+}
+```
+
+Or use `prefers-color-scheme`:
+
+```css
+@media (prefers-color-scheme: dark) {
+  [data-storerocket] {
+    --sr-bg: #111827;
+    --sr-text: #F9FAFB;
+    /* ... */
+  }
+}
+```
+
+---
+
+## Map Styles
+
+### Google Maps
+
+Use a JSON style or style URL:
+
+```js
+StoreRocket.create({
+  account: 'abc123',
+  container: '#locator',
+  map: {
+    provider: 'google',
+    style: [
+      {
+        "featureType": "water",
+        "elementType": "geometry",
+        "stylers": [{ "color": "#e9e9e9" }]
+      }
+    ]
+  }
+});
+```
+
+Create custom styles at [mapstyle.withgoogle.com](https://mapstyle.withgoogle.com/).
+
+### Mapbox
+
+Use a Mapbox style URL:
+
+```js
+StoreRocket.create({
+  account: 'abc123',
+  container: '#locator',
+  map: {
+    provider: 'mapbox',
+    style: 'mapbox://styles/mapbox/light-v11'
+  }
+});
+```
+
+Built-in Mapbox styles:
+- `mapbox://styles/mapbox/streets-v12` (default)
+- `mapbox://styles/mapbox/light-v11`
+- `mapbox://styles/mapbox/dark-v11`
+- `mapbox://styles/mapbox/satellite-v9`
+- `mapbox://styles/mapbox/outdoors-v12`
+
+---
+
+## Custom Markers
+
+See [Custom Markers](/widget/custom-markers) for marker styling.
+
+---
+
+## Responsive Behavior
+
+The widget automatically adapts to mobile:
+
+- **Desktop (768px+):** Side-by-side map and list
+- **Mobile (<768px):** Full-screen map with bottom sheet for results
+
+Control the breakpoint:
+
+```css
+[data-storerocket] {
+  --sr-mobile-breakpoint: 640px; /* Switch to mobile layout earlier */
+}
+```
+
+---
+
+## Height Behavior
+
+The widget fills its container. Common patterns:
+
+```css
+/* Fixed height */
+.locator {
+  height: 600px;
+}
+
+/* Viewport height */
+.locator {
+  height: 100vh;
+}
+
+/* Viewport minus header */
+.locator {
+  height: calc(100vh - 80px);
+}
+
+/* Minimum height with flex grow */
+.locator {
+  min-height: 500px;
+  flex: 1;
+}
+```
+
+---
+
+## Z-Index
+
+If the widget appears behind other elements:
+
+```css
+[data-storerocket] {
+  --sr-z-index: 1000;
+}
+```
+
+---
+
+## Print Styles
+
+The widget hides on print by default. Override:
+
+```css
+@media print {
+  [data-storerocket] {
+    display: block !important;
+    height: auto !important;
+  }
+}
+```
+
+---
+
+## Accessibility
+
+The widget follows accessibility best practices:
+- Keyboard navigation
+- ARIA labels
+- Focus indicators
+- Sufficient color contrast
+
+Customize focus ring:
+
+```css
+[data-storerocket] {
+  --sr-focus-ring: 0 0 0 2px var(--sr-primary);
+}
+```

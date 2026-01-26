@@ -1,0 +1,56 @@
+---
+title: 'List Filters'
+description: 'Retrieve all filters for a project'
+api: 'GET /api/v2/projects/{project_id}/filters'
+---
+
+Returns all filters configured for your project.
+
+<Note>
+  Filter endpoints are coming soon. Currently, filters can be managed via the dashboard or created automatically when adding locations.
+</Note>
+
+## Creating Filters via Locations
+
+When you create or update a location with filters, new filters are automatically created if they don't exist:
+
+```bash
+curl -X POST "https://api.storerocket.io/api/v2/projects/{project_id}/locations" \
+  -H "X-API-Key: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Example Store",
+    "address_line_1": "123 Main St",
+    "city": "Seattle",
+    "filters": "Drive-Through, Wheelchair Accessible, Open 24 Hours"
+  }'
+```
+
+This creates three filters if they don't already exist:
+- "Drive-Through" (slug: `drive-through`)
+- "Wheelchair Accessible" (slug: `wheelchair-accessible`)
+- "Open 24 Hours" (slug: `open-24-hours`)
+
+## Dashboard Management
+
+For now, use the dashboard to:
+- View all filters
+- Edit filter names and slugs
+- Add filter icons
+- Delete filters
+- Organize filters into categories
+
+Go to **Dashboard → Filters** to manage your filters.
+
+## Upcoming API Endpoints
+
+The following endpoints will be available soon:
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/v2/projects/{id}/filters` | List all filters |
+| `POST` | `/api/v2/projects/{id}/filters` | Create a filter |
+| `PUT` | `/api/v2/projects/{id}/filters/{id}` | Update a filter |
+| `DELETE` | `/api/v2/projects/{id}/filters/{id}` | Delete a filter |
+
+[Contact us](mailto:support@storerocket.io) if you need filter API access sooner.

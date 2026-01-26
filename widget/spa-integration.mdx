@@ -1,0 +1,365 @@
+---
+title: 'SPA Integration'
+description: 'Use StoreRocket with React, Vue, Next.js, and other frameworks'
+---
+
+The widget works seamlessly with single-page applications. Here's how to integrate with popular frameworks.
+
+## React
+
+```jsx
+import { useEffect, useRef } from 'react';
+
+function StoreLocator() {
+  const containerRef = useRef(null);
+  const widgetRef = useRef(null);
+
+  useEffect(() => {
+    // Load script
+    const script = document.createElement('script');
+    script.src = 'https://cdn.storerocket.io/widget.js';
+    script.async = true;
+    document.body.appendChild(script);
+
+    script.onload = () => {
+      // Initialize widget
+      window.StoreRocket.create({
+        account: 'YOUR_PROJECT_ID',
+        container: containerRef.current,
+        on: {
+          locationSelect: (location) => {
+            console.log('Selected:', location);
+          }
+        }
+      }).then(widget => {
+        widgetRef.current = widget;
+      });
+    };
+
+    // Cleanup
+    return () => {
+      if (widgetRef.current) {
+        widgetRef.current.destroy();
+      }
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  return <div ref={containerRef} style={{ height: '600px' }} />;
+}
+
+export default StoreLocator;
+```
+
+### React Hook
+
+Create a reusable hook:
+
+```jsx
+// useStoreRocket.js
+import { useEffect, useRef, useState } from 'react';
+
+export function useStoreRocket(config) {
+  const containerRef = useRef(null);
+  const [widget, setWidget] = useState(null);
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    let widgetInstance = null;
+
+    const init = async () => {
+      // Load script if not already loaded
+      if (!window.StoreRocket) {
+        await new Promise((resolve) => {
+          const script = document.createElement('script');
+          script.src = 'https://cdn.storerocket.io/widget.js';
+          script.onload = resolve;
+          document.body.appendChild(script);
+        });
+      }
+
+      if (!mounted || !containerRef.current) return;
+
+      widgetInstance = await window.StoreRocket.create({
+        ...config,
+        container: containerRef.current
+      });
+
+      if (mounted) {
+        setWidget(widgetInstance);
+        setIsReady(true);
+      }
+    };
+
+    init();
+
+    return () => {
+      mounted = false;
+      if (widgetInstance) {
+        widgetInstance.destroy();
+      }
+    };
+  }, [config.account]);
+
+  return { containerRef, widget, isReady };
+}
+
+// Usage
+function Locator() {
+  const { containerRef, widget, isReady } = useStoreRocket({
+    account: 'abc123'
+  });
+
+  const handleSearch = (query) => {
+    if (widget) {
+      widget.search(query);
+    }
+  };
+
+  return (
+    <div>
+      <input onChange={(e) => handleSearch(e.target.value)} />
+      <div ref={containerRef} style={{ height: '600px' }} />
+    </div>
+  );
+}
+```
+
+---
+
+## Vue 3
+
+```vue
+<template>
+  <div ref="container" style="height: 600px"></div>
+</template>
+
+<script setup>
+import { ref, onMounted, onUnmounted } from 'vue';
+
+const container = ref(null);
+let widget = null;
+
+onMounted(async () => {
+  // Load script
+  await new Promise((resolve) => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.storerocket.io/widget.js';
+    script.onload = resolve;
+    document.body.appendChild(script);
+  });
+
+  // Initialize
+  widget = await window.StoreRocket.create({
+    account: 'YOUR_PROJECT_ID',
+    container: container.value,
+    on: {
+      locationSelect: (location) => {
+        console.log('Selected:', location);
+      }
+    }
+  });
+});
+
+onUnmounted(() => {
+  if (widget) {
+    widget.destroy();
+  }
+});
+</script>
+```
+
+---
+
+## Next.js
+
+Use dynamic import to avoid SSR issues:
+
+```jsx
+// components/StoreLocator.js
+'use client';
+
+import { useEffect, useRef } from 'react';
+
+export default function StoreLocator() {
+  const containerRef = useRef(null);
+  const widgetRef = useRef(null);
+
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.storerocket.io/widget.js';
+    script.async = true;
+
+    script.onload = () => {
+      window.StoreRocket.create({
+        account: 'YOUR_PROJECT_ID',
+        container: containerRef.current
+      }).then(widget => {
+        widgetRef.current = widget;
+      });
+    };
+
+    document.body.appendChild(script);
+
+    return () => {
+      widgetRef.current?.destroy();
+      script.remove();
+    };
+  }, []);
+
+  return <div ref={containerRef} style={{ height: '600px' }} />;
+}
+```
+
+```jsx
+// pages/locations.js or app/locations/page.js
+import dynamic from 'next/dynamic';
+
+const StoreLocator = dynamic(
+  () => import('../components/StoreLocator'),
+  { ssr: false }
+);
+
+export default function LocationsPage() {
+  return (
+    <main>
+      <h1>Find a Store</h1>
+      <StoreLocator />
+    </main>
+  );
+}
+```
+
+---
+
+## Nuxt 3
+
+```vue
+<!-- components/StoreLocator.client.vue -->
+<template>
+  <div ref="container" style="height: 600px"></div>
+</template>
+
+<script setup>
+const container = ref(null);
+let widget = null;
+
+onMounted(async () => {
+  // @ts-ignore
+  const script = document.createElement('script');
+  script.src = 'https://cdn.storerocket.io/widget.js';
+  document.body.appendChild(script);
+
+  await new Promise(resolve => script.onload = resolve);
+
+  widget = await window.StoreRocket.create({
+    account: 'YOUR_PROJECT_ID',
+    container: container.value
+  });
+});
+
+onUnmounted(() => widget?.destroy());
+</script>
+```
+
+Use the `.client.vue` suffix to ensure client-side only rendering.
+
+---
+
+## Angular
+
+```typescript
+// store-locator.component.ts
+import { Component, ElementRef, ViewChild, OnInit, OnDestroy } from '@angular/core';
+
+declare global {
+  interface Window {
+    StoreRocket: any;
+  }
+}
+
+@Component({
+  selector: 'app-store-locator',
+  template: '<div #container style="height: 600px"></div>'
+})
+export class StoreLocatorComponent implements OnInit, OnDestroy {
+  @ViewChild('container', { static: true }) container!: ElementRef;
+  private widget: any;
+
+  ngOnInit() {
+    this.loadScript().then(() => this.initWidget());
+  }
+
+  ngOnDestroy() {
+    this.widget?.destroy();
+  }
+
+  private loadScript(): Promise<void> {
+    return new Promise((resolve) => {
+      if (window.StoreRocket) {
+        resolve();
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = 'https://cdn.storerocket.io/widget.js';
+      script.onload = () => resolve();
+      document.body.appendChild(script);
+    });
+  }
+
+  private async initWidget() {
+    this.widget = await window.StoreRocket.create({
+      account: 'YOUR_PROJECT_ID',
+      container: this.container.nativeElement
+    });
+  }
+}
+```
+
+---
+
+## Route Changes
+
+Destroy and recreate the widget on route changes:
+
+```js
+// React Router example
+useEffect(() => {
+  return () => {
+    widget?.destroy();
+  };
+}, [location.pathname]);
+```
+
+Or keep the widget alive and update it:
+
+```js
+useEffect(() => {
+  if (widget && searchParam) {
+    widget.search(searchParam);
+  }
+}, [searchParam]);
+```
+
+---
+
+## URL State Sync
+
+Enable URL sync to preserve widget state across navigation:
+
+```js
+StoreRocket.create({
+  account: 'abc123',
+  container: '#locator',
+  features: {
+    urlSync: true // Syncs search, filters, selected location to URL
+  }
+});
+```
+
+The widget reads and writes URL parameters like:
+- `?search=New+York`
+- `?filters=drive-through,open-24-hours`
+- `?location=downtown-seattle`

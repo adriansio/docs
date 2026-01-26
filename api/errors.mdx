@@ -1,0 +1,182 @@
+---
+title: 'Errors'
+description: 'API error codes and handling'
+---
+
+The API uses standard HTTP status codes and returns error details in JSON.
+
+## Error Response Format
+
+```json
+{
+  "error": "Validation Error",
+  "message": "The name field is required.",
+  "errors": {
+    "name": ["The name field is required."],
+    "city": ["The city field is required."]
+  }
+}
+```
+
+---
+
+## HTTP Status Codes
+
+| Code | Meaning |
+|------|---------|
+| `200` | Success |
+| `201` | Created (POST requests) |
+| `400` | Bad Request - Invalid parameters |
+| `401` | Unauthorized - Invalid or missing API key |
+| `403` | Forbidden - Insufficient permissions |
+| `404` | Not Found - Resource doesn't exist |
+| `422` | Validation Error - Invalid data |
+| `429` | Too Many Requests - Rate limit exceeded |
+| `500` | Server Error - Something went wrong |
+
+---
+
+## Common Errors
+
+### 401 Unauthorized
+
+```json
+{
+  "error": "Unauthorized",
+  "message": "Invalid API key"
+}
+```
+
+**Causes:**
+- Missing `X-API-Key` header
+- Invalid or revoked API key
+- Key from wrong project
+
+### 404 Not Found
+
+```json
+{
+  "error": "Not Found",
+  "message": "Location not found"
+}
+```
+
+**Causes:**
+- Invalid location ID
+- Location was deleted
+- Location belongs to different project
+
+### 422 Validation Error
+
+```json
+{
+  "error": "Validation Error",
+  "message": "The given data was invalid.",
+  "errors": {
+    "name": ["The name field is required."],
+    "address_line_1": ["The address line 1 field is required."],
+    "city": ["The city field is required."]
+  }
+}
+```
+
+**Causes:**
+- Missing required fields
+- Invalid field format
+- Value out of range
+
+### 429 Rate Limit Exceeded
+
+```json
+{
+  "error": "Too Many Requests",
+  "message": "Rate limit exceeded. Try again in 60 seconds.",
+  "retry_after": 60
+}
+```
+
+**Solution:**
+- Wait for the `retry_after` period
+- Implement exponential backoff
+- Upgrade plan for higher limits
+
+---
+
+## Handling Errors
+
+### PHP Example
+
+```php
+$response = Http::withHeaders([
+    'X-API-Key' => $apiKey,
+])->post($url, $data);
+
+if ($response->failed()) {
+    $error = $response->json();
+
+    match ($response->status()) {
+        401 => throw new AuthenticationException($error['message']),
+        404 => throw new NotFoundException($error['message']),
+        422 => throw new ValidationException($error['errors']),
+        429 => sleep($error['retry_after'] ?? 60),
+        default => throw new ApiException($error['message']),
+    };
+}
+
+return $response->json('data');
+```
+
+### JavaScript Example
+
+```javascript
+async function apiRequest(url, options = {}) {
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      'X-API-Key': API_KEY,
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+
+    if (response.status === 429) {
+      const retryAfter = error.retry_after || 60;
+      await new Promise(r => setTimeout(r, retryAfter * 1000));
+      return apiRequest(url, options); // Retry
+    }
+
+    throw new Error(error.message);
+  }
+
+  return response.json();
+}
+```
+
+---
+
+## Retry Strategy
+
+For transient errors (5xx, 429), implement exponential backoff:
+
+```javascript
+async function withRetry(fn, maxRetries = 3) {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      if (attempt === maxRetries - 1) throw error;
+
+      const delay = Math.min(1000 * 2 ** attempt, 30000);
+      await new Promise(r => setTimeout(r, delay));
+    }
+  }
+}
+
+// Usage
+const locations = await withRetry(() =>
+  apiRequest('/api/v2/projects/abc123/locations')
+);
+```

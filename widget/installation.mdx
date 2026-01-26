@@ -1,0 +1,145 @@
+---
+title: 'Installation'
+description: 'Add the StoreRocket widget to your website'
+---
+
+## Script Tag (Recommended)
+
+Add these two lines to your HTML:
+
+```html
+<div data-storerocket="YOUR_PROJECT_ID" style="height: 600px;"></div>
+<script src="https://cdn.storerocket.io/widget.js" async></script>
+```
+
+<Note>
+  Replace `YOUR_PROJECT_ID` with your project's hashid from the [dashboard](https://app.storerocket.io).
+</Note>
+
+The widget automatically:
+- Detects your container element
+- Loads your project configuration
+- Fetches locations
+- Renders the map and search interface
+
+## Container Sizing
+
+The widget fills its container. Set a height:
+
+```html
+<!-- Fixed height -->
+<div data-storerocket="abc123" style="height: 600px;"></div>
+
+<!-- Full viewport -->
+<div data-storerocket="abc123" style="height: 100vh;"></div>
+
+<!-- Responsive with CSS -->
+<div data-storerocket="abc123" class="store-locator"></div>
+```
+
+```css
+.store-locator {
+  height: 500px;
+}
+
+@media (min-width: 768px) {
+  .store-locator {
+    height: 700px;
+  }
+}
+```
+
+## Platform Guides
+
+<AccordionGroup>
+  <Accordion title="WordPress">
+    1. Edit your page in WordPress
+    2. Add a **Custom HTML** block
+    3. Paste the embed code
+    4. Set the container height
+    5. Save and preview
+  </Accordion>
+
+  <Accordion title="Shopify">
+    Install our [Shopify App](https://apps.shopify.com/storerocket) for the best experience, or:
+
+    1. Go to **Online Store → Pages**
+    2. Create or edit a page
+    3. Click **Show HTML** (`<>` button)
+    4. Paste the embed code
+    5. Save
+  </Accordion>
+
+  <Accordion title="Squarespace">
+    1. Edit your page
+    2. Add a **Code** block
+    3. Paste the embed code
+    4. Save and publish
+  </Accordion>
+
+  <Accordion title="Wix">
+    1. Add an **Embed → Custom Element** or **HTML iframe**
+    2. Paste the embed code
+    3. Adjust the element size
+    4. Publish
+  </Accordion>
+
+  <Accordion title="Webflow">
+    1. Add an **Embed** element
+    2. Paste the embed code
+    3. Set dimensions in the style panel
+    4. Publish
+  </Accordion>
+</AccordionGroup>
+
+## Multiple Widgets
+
+You can have multiple widgets on one page with different configurations:
+
+```html
+<!-- US stores only -->
+<div
+  data-storerocket="abc123"
+  data-countries="US"
+  style="height: 400px;"
+></div>
+
+<!-- Canada stores only -->
+<div
+  data-storerocket="abc123"
+  data-countries="CA"
+  style="height: 400px;"
+></div>
+
+<!-- Single script tag handles all widgets -->
+<script src="https://cdn.storerocket.io/widget.js" async></script>
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Widget not appearing">
+    - Check that your container has a height set
+    - Verify your project ID is correct
+    - Check browser console for errors
+    - Ensure the script tag is loading (Network tab)
+  </Accordion>
+
+  <Accordion title="Map not loading">
+    - Verify your map provider API key in the dashboard
+    - Check if your domain is allowed in Google Cloud Console or Mapbox
+    - Look for API errors in the browser console
+  </Accordion>
+
+  <Accordion title="Locations not showing">
+    - Confirm you have published locations in your project
+    - Check that locations have valid coordinates
+    - Verify your project isn't in preview/sandbox mode
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<Card title="Configuration Options" icon="sliders" href="/widget/options">
+  Customize the widget with data attributes and JavaScript options.
+</Card>

@@ -1,0 +1,143 @@
+---
+title: 'Callbacks'
+description: 'Respond to widget actions with callback functions'
+---
+
+Callbacks let you intercept and respond to widget actions. Unlike events (which are informational), callbacks can modify behavior.
+
+<Note>
+  For tracking and analytics, use [Events](/widget/events) instead. Callbacks are for customizing widget behavior.
+</Note>
+
+---
+
+## Location Data Callback
+
+Modify location data before rendering:
+
+```js
+StoreRocket.create({
+  account: 'abc123',
+  container: '#locator',
+  callbacks: {
+    transformLocation: (location) => {
+      // Add computed fields
+      return {
+        ...location,
+        displayName: `${location.name} - ${location.city}`,
+        isNew: Date.now() - new Date(location.created_at) < 30 * 24 * 60 * 60 * 1000
+      };
+    }
+  }
+});
+```
+
+---
+
+## Direction URL Callback
+
+Customize the directions URL:
+
+```js
+StoreRocket.create({
+  account: 'abc123',
+  container: '#locator',
+  callbacks: {
+    getDirectionsUrl: (location, userLocation) => {
+      // Use Waze instead of Google Maps
+      return `https://waze.com/ul?ll=${location.lat},${location.lng}&navigate=yes`;
+    }
+  }
+});
+```
+
+---
+
+## Search Callback
+
+Filter or modify search results:
+
+```js
+StoreRocket.create({
+  account: 'abc123',
+  container: '#locator',
+  callbacks: {
+    filterResults: (results, query) => {
+      // Only show locations with inventory
+      return results.filter(loc => loc.custom_fields?.in_stock === true);
+    }
+  }
+});
+```
+
+---
+
+## Render Callbacks
+
+Customize how specific elements render:
+
+```js
+StoreRocket.create({
+  account: 'abc123',
+  container: '#locator',
+  callbacks: {
+    // Custom distance formatting
+    formatDistance: (distance, unit) => {
+      if (distance < 1) {
+        return unit === 'miles' ? 'Less than a mile' : 'Less than 1 km';
+      }
+      return `${distance.toFixed(1)} ${unit}`;
+    },
+
+    // Custom hours display
+    formatHours: (hours, location) => {
+      if (location.custom_fields?.appointment_only) {
+        return 'By appointment only';
+      }
+      return hours; // Default formatting
+    }
+  }
+});
+```
+
+---
+
+## Preventing Default Actions
+
+Return `false` from action callbacks to prevent the default behavior:
+
+```js
+StoreRocket.create({
+  account: 'abc123',
+  container: '#locator',
+  callbacks: {
+    onDirectionsClick: (location) => {
+      // Show custom modal instead of opening directions
+      showMyCustomDirectionsModal(location);
+      return false; // Prevent default
+    },
+
+    onPhoneClick: (location, phone) => {
+      // Track and then allow default
+      analytics.track('phone_click', { location: location.id });
+      return true; // Allow default (open tel: link)
+    }
+  }
+});
+```
+
+---
+
+## All Available Callbacks
+
+| Callback | Parameters | Return | Description |
+|----------|------------|--------|-------------|
+| `transformLocation` | `(location)` | `location` | Modify location data |
+| `filterResults` | `(results, query)` | `results[]` | Filter search results |
+| `getDirectionsUrl` | `(location, userLocation?)` | `string` | Custom directions URL |
+| `formatDistance` | `(distance, unit)` | `string` | Custom distance text |
+| `formatHours` | `(hours, location)` | `string` | Custom hours text |
+| `onDirectionsClick` | `(location)` | `boolean` | Intercept directions click |
+| `onPhoneClick` | `(location, phone)` | `boolean` | Intercept phone click |
+| `onWebsiteClick` | `(location, url)` | `boolean` | Intercept website click |
+| `onLocationSelect` | `(location)` | `boolean` | Intercept location selection |

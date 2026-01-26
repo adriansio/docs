@@ -1,0 +1,134 @@
+---
+title: 'Update Location'
+description: 'Update an existing location'
+api: 'PUT /api/v2/projects/{project_id}/locations/{location_id}'
+---
+
+Updates a location and returns the updated resource.
+
+## Request
+
+```bash
+curl -X PUT "https://api.storerocket.io/api/v2/projects/{project_id}/locations/{location_id}" \
+  -H "X-API-Key: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Downtown Seattle - Flagship",
+    "phone": "(206) 555-9999"
+  }'
+```
+
+## Path Parameters
+
+<ParamField path="project_id" type="string" required>
+  Your project's hashid.
+</ParamField>
+
+<ParamField path="location_id" type="string" required>
+  The location's hashid.
+</ParamField>
+
+## Body Parameters
+
+All fields are optional. Only provided fields are updated.
+
+See [Create Location](/api/locations/create) for field descriptions.
+
+<Note>
+  Required fields (`name`, `address_line_1`, `city`) must be provided even for partial updates.
+</Note>
+
+## Examples
+
+### Update name and phone
+
+```bash
+curl -X PUT "https://api.storerocket.io/api/v2/projects/{project_id}/locations/{location_id}" \
+  -H "X-API-Key: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Downtown Seattle - Flagship",
+    "address_line_1": "123 Main St",
+    "city": "Seattle",
+    "phone": "(206) 555-9999"
+  }'
+```
+
+### Update hours
+
+```bash
+curl -X PUT "https://api.storerocket.io/api/v2/projects/{project_id}/locations/{location_id}" \
+  -H "X-API-Key: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Downtown Seattle",
+    "address_line_1": "123 Main St",
+    "city": "Seattle",
+    "hours": {
+      "mon": { "open": "08:00", "close": "20:00" },
+      "tue": { "open": "08:00", "close": "20:00" },
+      "wed": { "open": "08:00", "close": "20:00" },
+      "thu": { "open": "08:00", "close": "20:00" },
+      "fri": { "open": "08:00", "close": "22:00" },
+      "sat": { "open": "09:00", "close": "18:00" },
+      "sun": { "closed": true }
+    }
+  }'
+```
+
+### Update filters
+
+```bash
+curl -X PUT "https://api.storerocket.io/api/v2/projects/{project_id}/locations/{location_id}" \
+  -H "X-API-Key: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Downtown Seattle",
+    "address_line_1": "123 Main St",
+    "city": "Seattle",
+    "filters": "Drive-Through, Open 24 Hours, EV Charging"
+  }'
+```
+
+### Hide location
+
+```bash
+curl -X PUT "https://api.storerocket.io/api/v2/projects/{project_id}/locations/{location_id}" \
+  -H "X-API-Key: your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Downtown Seattle",
+    "address_line_1": "123 Main St",
+    "city": "Seattle",
+    "visible": false
+  }'
+```
+
+## Response
+
+Returns the full updated location object.
+
+```json
+{
+  "data": {
+    "id": "abc123",
+    "name": "Downtown Seattle - Flagship",
+    "address": "123 Main St, Seattle, WA 98101",
+    "phone": "(206) 555-9999",
+    "visible": true,
+    "updated_at": "2024-01-20T15:30:00Z"
+  }
+}
+```
+
+## Geocoding
+
+If you update address fields without providing `lat`/`lng`, the location will be automatically re-geocoded.
+
+## Errors
+
+| Status | Description |
+|--------|-------------|
+| `404` | Location not found |
+| `422` | Validation error |
+| `401` | Invalid API key |

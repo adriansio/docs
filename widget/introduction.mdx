@@ -1,0 +1,66 @@
+---
+title: 'Introduction'
+description: 'Add a beautiful, interactive store locator to your website'
+---
+
+The StoreRocket Widget is a drop-in store locator that works on any website. It's fast, mobile-friendly, and fully customizable.
+
+## Features
+
+<CardGroup cols={2}>
+  <Card title="Lightning Fast" icon="bolt">
+    Geohash-compressed data loads instantly, even with thousands of locations.
+  </Card>
+  <Card title="Mobile-First" icon="mobile">
+    Responsive design with native-feeling touch gestures and bottom sheets.
+  </Card>
+  <Card title="Smart Search" icon="magnifying-glass">
+    Autocomplete with address suggestions and location name matching.
+  </Card>
+  <Card title="Clustering" icon="layer-group">
+    Automatically groups nearby markers for clean maps at any zoom level.
+  </Card>
+</CardGroup>
+
+## Quick Example
+
+Add this to your HTML:
+
+```html
+<div data-storerocket="YOUR_PROJECT_ID" style="height: 600px;"></div>
+<script src="https://cdn.storerocket.io/widget.js" async></script>
+```
+
+That's it. The widget loads your locations and renders a fully functional store locator.
+
+## Map Providers
+
+StoreRocket supports both **Google Maps** and **Mapbox**. Configure your preferred provider in the dashboard, or override it per-embed.
+
+## Themes
+
+Four built-in themes to match your brand:
+
+| Theme | Description |
+|-------|-------------|
+| `aurora` | Modern, clean design with purple accents (default) |
+| `nebula` | Dark mode with vibrant gradients |
+| `eclipse` | Minimal, high-contrast design |
+| `starter` | Basic theme for maximum customization |
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/widget/installation">
+    Get the widget on your site in 2 minutes.
+  </Card>
+  <Card title="Configuration" icon="sliders" href="/widget/options">
+    Customize behavior with options and data attributes.
+  </Card>
+  <Card title="Events" icon="bell" href="/widget/events">
+    Hook into search, selection, and map interactions.
+  </Card>
+  <Card title="SPA Integration" icon="code" href="/widget/spa-integration">
+    Use with React, Vue, or other frameworks.
+  </Card>
+</CardGroup>

@@ -1,0 +1,141 @@
+---
+title: 'Authentication'
+description: 'Authenticate your API requests'
+---
+
+## API Keys
+
+All API requests require authentication via an API key.
+
+### Getting Your API Key
+
+1. Go to **Dashboard → Developer**
+2. Click **Create API Key**
+3. Give it a descriptive name (e.g., "Production Server", "Zapier Integration")
+4. Copy the key immediately - it won't be shown again
+
+### Using Your API Key
+
+Include the key in the `X-API-Key` header:
+
+```bash
+curl -X GET "https://api.storerocket.io/api/v2/projects/{project_id}/locations" \
+  -H "X-API-Key: sk_live_abc123xyz789"
+```
+
+Or as a query parameter (not recommended):
+
+```bash
+curl "https://api.storerocket.io/api/v2/projects/{project_id}/locations?api_key=sk_live_abc123xyz789"
+```
+
+<Warning>
+  Query parameter authentication is less secure. Use headers when possible.
+</Warning>
+
+---
+
+## Key Types
+
+| Prefix | Type | Use Case |
+|--------|------|----------|
+| `sk_live_` | Production | Live integrations |
+| `sk_test_` | Test | Development and testing |
+
+Test keys have the same capabilities but are clearly marked for non-production use.
+
+---
+
+## Key Permissions
+
+API keys have full access to your project. You cannot restrict permissions per-key (yet).
+
+Available operations:
+- `location:read` - List and view locations
+- `location:create` - Create new locations
+- `location:update` - Update existing locations
+- `location:delete` - Delete locations
+- `filter:read` - List filters
+- `filter:create` - Create filters
+- `analytics:read` - View analytics data
+
+---
+
+## Security Best Practices
+
+<AccordionGroup>
+  <Accordion title="Never expose keys in client-side code">
+    API keys should only be used in server-side code. Never include them in:
+    - JavaScript running in the browser
+    - Mobile app source code
+    - Public repositories
+
+    If you need client-side access, use the Widget JavaScript API instead.
+  </Accordion>
+
+  <Accordion title="Use environment variables">
+    Store API keys in environment variables, not in code:
+
+    ```bash
+    # .env
+    STOREROCKET_API_KEY=sk_live_abc123xyz789
+    ```
+
+    ```php
+    // PHP
+    $apiKey = getenv('STOREROCKET_API_KEY');
+    ```
+
+    ```javascript
+    // Node.js
+    const apiKey = process.env.STOREROCKET_API_KEY;
+    ```
+  </Accordion>
+
+  <Accordion title="Rotate keys periodically">
+    Create a new key before revoking the old one:
+
+    1. Create new API key
+    2. Update your integrations to use new key
+    3. Verify everything works
+    4. Revoke the old key
+  </Accordion>
+
+  <Accordion title="Use separate keys per integration">
+    Create different keys for different integrations. This makes it easier to:
+    - Track which integration is making requests
+    - Revoke access for a single integration without affecting others
+    - Debug issues
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Revoking Keys
+
+To revoke an API key:
+
+1. Go to **Dashboard → Developer → API Keys**
+2. Find the key you want to revoke
+3. Click the **Delete** button
+4. Confirm revocation
+
+<Warning>
+  Revoked keys stop working immediately. Make sure no active integrations are using the key.
+</Warning>
+
+---
+
+## Authentication Errors
+
+| Status | Error | Description |
+|--------|-------|-------------|
+| `401` | `Unauthorized` | Missing or invalid API key |
+| `403` | `Forbidden` | Key doesn't have required permission |
+
+```json
+{
+  "error": "Unauthorized",
+  "message": "Invalid API key"
+}
+```

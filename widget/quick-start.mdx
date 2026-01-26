@@ -1,0 +1,116 @@
+---
+title: 'Quick Start'
+description: 'Get a store locator running in 5 minutes'
+---
+
+## 1. Get Your Project ID
+
+Sign in to your [StoreRocket dashboard](https://app.storerocket.io) and copy your project ID from **Settings → Embed Code**.
+
+## 2. Add the Embed Code
+
+Paste this into your HTML where you want the locator:
+
+```html
+<div data-storerocket="YOUR_PROJECT_ID" style="height: 600px;"></div>
+<script src="https://cdn.storerocket.io/widget.js" async></script>
+```
+
+## 3. Customize (Optional)
+
+Add data attributes to configure behavior:
+
+```html
+<div
+  data-storerocket="YOUR_PROJECT_ID"
+  data-theme="aurora"
+  data-unit="miles"
+  data-initial-view="nearby"
+  data-countries="US,CA"
+  style="height: 600px;"
+></div>
+```
+
+## Common Configurations
+
+### Show All Locations on Load
+
+```html
+<div
+  data-storerocket="abc123"
+  data-initial-view="all"
+  data-fit-markers="true"
+  style="height: 600px;"
+></div>
+```
+
+### Kilometers + Restrict to Europe
+
+```html
+<div
+  data-storerocket="abc123"
+  data-unit="kilometers"
+  data-countries="GB,DE,FR,ES,IT"
+  style="height: 600px;"
+></div>
+```
+
+### Pre-select Filters
+
+```html
+<div
+  data-storerocket="abc123"
+  data-filters="wheelchair-accessible,open-24-hours"
+  style="height: 600px;"
+></div>
+```
+
+### Open Specific Location
+
+```html
+<div
+  data-storerocket="abc123"
+  data-location="downtown-seattle"
+  style="height: 600px;"
+></div>
+```
+
+## JavaScript Initialization
+
+For more control, initialize programmatically:
+
+```html
+<div id="locator" style="height: 600px;"></div>
+<script src="https://cdn.storerocket.io/widget.js"></script>
+<script>
+  StoreRocket.create({
+    account: 'YOUR_PROJECT_ID',
+    container: '#locator',
+    theme: 'aurora',
+    search: {
+      unit: 'miles',
+      radius: 50,
+      countries: ['US', 'CA']
+    },
+    initialState: {
+      view: 'nearby',
+      filters: ['wheelchair-accessible']
+    },
+    on: {
+      ready: (widget) => console.log('Widget ready!'),
+      locationSelect: (location) => console.log('Selected:', location.name)
+    }
+  });
+</script>
+```
+
+## What's Next
+
+<CardGroup cols={2}>
+  <Card title="All Options" icon="sliders" href="/widget/options">
+    Full reference of configuration options.
+  </Card>
+  <Card title="Events" icon="bell" href="/widget/events">
+    React to user interactions.
+  </Card>
+</CardGroup>

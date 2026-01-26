@@ -1,0 +1,238 @@
+---
+title: 'Filters'
+description: 'Let users filter locations by attributes'
+---
+
+Filters allow users to narrow down locations based on attributes like services, amenities, or categories.
+
+## Creating Filters
+
+Filters are created in your StoreRocket dashboard:
+
+1. Go to **Filters** in the sidebar
+2. Click **Add Filter**
+3. Enter name (e.g., "Drive-Through") and slug (e.g., "drive-through")
+4. Optionally add an icon
+5. Assign the filter to relevant locations
+
+---
+
+## Filter Display
+
+Filters appear as chips above the location list. Users can:
+- Click to toggle filters on/off
+- Select multiple filters (default)
+- See results update in real-time
+
+---
+
+## Configuration
+
+### Selection Mode
+
+Allow single or multiple filter selection:
+
+```js
+StoreRocket.create({
+  account: 'abc123',
+  container: '#locator',
+  filtersConfig: {
+    selectionMode: 'single'  // or 'multiple' (default)
+  }
+});
+```
+
+### Filter Behavior (AND/OR)
+
+Control how multiple filters combine:
+
+```js
+filtersConfig: {
+  behavior: 'exclusive'  // AND - must match ALL filters
+  // or
+  behavior: 'inclusive'  // OR - must match ANY filter
+}
+```
+
+**Exclusive (AND):** "Show locations that have drive-through AND are open 24 hours"
+
+**Inclusive (OR):** "Show locations that have drive-through OR are open 24 hours"
+
+### Show Icons
+
+Display icons next to filter chips:
+
+```js
+filtersConfig: {
+  showIcons: true
+}
+```
+
+---
+
+## Pre-Selected Filters
+
+Open the widget with filters already active:
+
+### Via Data Attribute
+
+```html
+<div
+  data-storerocket="abc123"
+  data-filters="drive-through,wheelchair-accessible"
+></div>
+```
+
+### Via JavaScript
+
+```js
+StoreRocket.create({
+  account: 'abc123',
+  container: '#locator',
+  initialState: {
+    filters: ['drive-through', 'wheelchair-accessible']
+  }
+});
+```
+
+---
+
+## Programmatic Control
+
+### Set Filters
+
+```js
+// Set specific filters
+widget.setFilters(['drive-through', 'open-24-hours']);
+
+// Clear all filters
+widget.setFilters([]);
+```
+
+### Toggle Filter
+
+```js
+widget.toggleFilter('drive-through');
+```
+
+### Get Active Filters
+
+```js
+const active = widget.getFilters();
+// ['drive-through', 'wheelchair-accessible']
+```
+
+---
+
+## Filter Events
+
+Listen to filter changes:
+
+```js
+StoreRocket.create({
+  account: 'abc123',
+  container: '#locator',
+  on: {
+    filterSelect: (filter, activeFilters) => {
+      console.log(`Activated: ${filter.name}`);
+    },
+
+    filterDeselect: (filter, activeFilters) => {
+      console.log(`Deactivated: ${filter.name}`);
+    },
+
+    filterChange: (activeFilters, previousFilters) => {
+      // Track filter usage
+      analytics.track('filters_changed', {
+        filters: activeFilters.map(f => f.slug)
+      });
+    },
+
+    filterClear: (previousFilters) => {
+      console.log('All filters cleared');
+    }
+  }
+});
+```
+
+---
+
+## Filter Categories
+
+Group related filters into categories (configured in dashboard):
+
+```
+Services
+├── Drive-Through
+├── Pickup
+└── Delivery
+
+Amenities
+├── Wheelchair Accessible
+├── Parking
+└── WiFi
+```
+
+Categories display as collapsible sections in the filter panel.
+
+---
+
+## Custom Filter UI
+
+Hide the built-in filter UI and create your own:
+
+```html
+<div class="my-filters">
+  <button data-filter="drive-through">Drive-Through</button>
+  <button data-filter="open-24-hours">24 Hours</button>
+</div>
+
+<div id="locator" style="height: 600px;"></div>
+
+<script>
+  const widget = await StoreRocket.create({
+    account: 'abc123',
+    container: '#locator',
+    features: {
+      filters: false  // Hide built-in filter UI
+    }
+  });
+
+  // Wire up custom buttons
+  document.querySelectorAll('[data-filter]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      widget.toggleFilter(btn.dataset.filter);
+      updateButtonStates();
+    });
+  });
+
+  function updateButtonStates() {
+    const active = widget.getFilters();
+    document.querySelectorAll('[data-filter]').forEach(btn => {
+      btn.classList.toggle('active', active.includes(btn.dataset.filter));
+    });
+  }
+</script>
+```
+
+---
+
+## URL Sync
+
+With `urlSync` enabled, active filters persist in the URL:
+
+```
+https://example.com/locations?filters=drive-through,open-24-hours
+```
+
+Users can bookmark or share filtered views.
+
+```js
+StoreRocket.create({
+  account: 'abc123',
+  container: '#locator',
+  features: {
+    urlSync: true
+  }
+});
+```
