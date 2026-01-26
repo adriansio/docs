@@ -1,0 +1,50 @@
+---
+title: 'StoreRocket Documentation'
+description: 'Build beautiful store locators for any website'
+---
+
+Welcome to the StoreRocket documentation. Learn how to embed our store locator widget and integrate with our REST API.
+
+<CardGroup cols={2}>
+  <Card title="Widget Guide" icon="map-location-dot" href="/widget/introduction">
+    Add an interactive store locator to your website in minutes.
+  </Card>
+  <Card title="REST API" icon="code" href="/api/introduction">
+    Programmatically manage locations, filters, and analytics.
+  </Card>
+</CardGroup>
+
+## Quick Start
+
+### Embed the Widget
+
+```html
+<div data-storerocket="YOUR_PROJECT_ID" style="height: 600px;"></div>
+<script src="https://cdn.storerocket.io/widget.js" async></script>
+```
+
+### API Request
+
+```bash
+curl -X GET "https://api.storerocket.io/api/v2/projects/{project_id}/locations" \
+  -H "X-API-Key: your_api_key"
+```
+
+## Popular Pages
+
+<CardGroup cols={3}>
+  <Card title="Installation" icon="download" href="/widget/installation">
+    Platform-specific setup guides.
+  </Card>
+  <Card title="Configuration" icon="sliders" href="/widget/options">
+    All widget options and settings.
+  </Card>
+  <Card title="Events" icon="bell" href="/widget/events">
+    40+ events for tracking and integration.
+  </Card>
+</CardGroup>
+
+## Need Help?
+
+- **Dashboard:** [app.storerocket.io](https://app.storerocket.io)
+- **Support:** [support@storerocket.io](mailto:support@storerocket.io)
