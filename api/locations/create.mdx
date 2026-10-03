@@ -1,241 +1,84 @@
 ---
-title: 'Create Location'
-description: 'Add a new location'
+title: 'Create a location'
+description: 'Add a location, with or without a street address or opening hours.'
 api: 'POST /api/v2/projects/{project_id}/locations'
 ---
 
-Creates a new location and returns the created resource.
+Requires `location:create` and project API access. Returns `200` and the [location resource](/api/locations/get#response-format).
 
-## Request
+<ParamField path="project_id" type="string" required>The public project ID.</ParamField>
+<ParamField body="name" type="string" required>Location name.</ParamField>
+<ParamField body="city" type="string" required>City. A street address is optional.</ParamField>
+<ParamField body="address_line_1" type="string">Street address.</ParamField>
+<ParamField body="address_line_2" type="string">Additional address information.</ParamField>
+<ParamField body="state" type="string">State or region.</ParamField>
+<ParamField body="postcode" type="string">Postal code.</ParamField>
+<ParamField body="country" type="string">Country.</ParamField>
+<ParamField body="lat" type="number">Latitude between -90 and 90.</ParamField>
+<ParamField body="lng" type="number">Longitude between -180 and 180.</ParamField>
+<ParamField body="visible" type="boolean">Whether the location is shown. Supply this explicitly when you need a particular visibility.</ParamField>
+<ParamField body="hours" type="object">A full weekday schedule, or `{}` for no schedule.</ParamField>
+<ParamField body="phone" type="string">Phone number.</ParamField>
+<ParamField body="email" type="string">Email address.</ParamField>
+<ParamField body="url" type="string">Website URL.</ParamField>
 
+<RequestExample>
 ```bash
-curl -X POST "https://api.storerocket.io/api/v2/projects/{project_id}/locations" \
-  -H "X-API-Key: your_api_key" \
-  -H "Content-Type: application/json" \
+curl -X POST 'https://storerocket.io/api/v2/projects/PROJECT_ID/locations' \
+  -H 'Authorization: Bearer YOUR_TOKEN' \
+  -H 'Accept: application/json' \
+  -H 'Content-Type: application/json' \
   -d '{
-    "name": "Downtown Seattle",
-    "address_line_1": "123 Main St",
-    "city": "Seattle",
-    "state": "WA",
-    "postcode": "98101",
-    "country": "US",
-    "phone": "(206) 555-1234"
+    "name":"Coming Soon Store",
+    "city":"Seattle",
+    "lat":47.6062,
+    "lng":-122.3321,
+    "visible":false,
+    "hours":{}
   }'
 ```
+</RequestExample>
 
-## Path Parameters
+## Opening hours
 
-<ParamField path="project_id" type="string" required>
-  Your project's hashid.
-</ParamField>
+Omit `hours` or send `{}` for a location without hours. You do not need to invent opening times for coming-soon locations.
 
-## Body Parameters
-
-### Required Fields
-
-<ParamField body="name" type="string" required>
-  Location name.
-</ParamField>
-
-<ParamField body="address_line_1" type="string" required>
-  Street address.
-</ParamField>
-
-<ParamField body="city" type="string" required>
-  City name.
-</ParamField>
-
-### Optional Fields
-
-<ParamField body="address_line_2" type="string">
-  Suite, unit, floor, etc.
-</ParamField>
-
-<ParamField body="state" type="string">
-  State or province.
-</ParamField>
-
-<ParamField body="postcode" type="string">
-  Postal/ZIP code.
-</ParamField>
-
-<ParamField body="country" type="string">
-  Country code (e.g., "US", "CA", "GB").
-</ParamField>
-
-<ParamField body="lat" type="number">
-  Latitude. Auto-geocoded if not provided.
-</ParamField>
-
-<ParamField body="lng" type="number">
-  Longitude. Auto-geocoded if not provided.
-</ParamField>
-
-<ParamField body="phone" type="string">
-  Phone number.
-</ParamField>
-
-<ParamField body="email" type="string">
-  Email address.
-</ParamField>
-
-<ParamField body="url" type="string">
-  Website URL.
-</ParamField>
-
-<ParamField body="facebook" type="string">
-  Facebook page URL.
-</ParamField>
-
-<ParamField body="instagram" type="string">
-  Instagram profile URL.
-</ParamField>
-
-<ParamField body="twitter" type="string">
-  Twitter/X profile URL.
-</ParamField>
-
-<ParamField body="visible" type="boolean" default="true">
-  Whether location appears in the widget.
-</ParamField>
-
-<ParamField body="slug" type="string">
-  URL-friendly identifier. Auto-generated from name if not provided.
-</ParamField>
-
-<ParamField body="location_type" type="string">
-  Location type name (must exist in project).
-</ParamField>
-
-<ParamField body="cover" type="string">
-  Cover image URL.
-</ParamField>
-
-### Hours
-
-<ParamField body="hours" type="object">
-  Business hours for each day. Keys can be short (`mon`) or full (`monday`).
-
-  ```json
-  {
-    "hours": {
-      "mon": { "open": "09:00", "close": "18:00" },
-      "tue": { "open": "09:00", "close": "18:00" },
-      "wed": { "open": "09:00", "close": "18:00" },
-      "thu": { "open": "09:00", "close": "18:00" },
-      "fri": { "open": "09:00", "close": "21:00" },
-      "sat": { "open": "10:00", "close": "17:00" },
-      "sun": { "closed": true }
-    }
-  }
-  ```
-
-  <Warning>If providing hours, all 7 days are required.</Warning>
-</ParamField>
-
-### Filters
-
-<ParamField body="filters" type="string">
-  Comma-separated filter names. Filters are created if they don't exist.
-
-  ```json
-  { "filters": "Drive-Through, Wheelchair Accessible, Open 24 Hours" }
-  ```
-</ParamField>
-
-### Custom Fields
-
-<ParamField body="fields" type="object">
-  Custom field values. Fields are created if they don't exist.
-
-  ```json
-  {
-    "fields": {
-      "Manager Name": "John Smith",
-      "Parking Spaces": "50"
-    }
-  }
-  ```
-</ParamField>
-
-### Calls to Action
-
-<ParamField body="callsToAction" type="object">
-  CTA button values. CTAs are created if they don't exist.
-
-  ```json
-  {
-    "callsToAction": {
-      "Book Appointment": "https://calendly.com/example",
-      "Order Online": "https://example.com/order"
-    }
-  }
-  ```
-</ParamField>
-
-## Response
+A nonempty POST hours object requires **all seven weekdays**. Use short keys `mon`, `tue`, `wed`, `thu`, `fri`, `sat`, `sun`, or the corresponding full weekday names.
+Values are time-range strings, `closed`, or null for an unset day:
 
 ```json
 {
-  "data": {
-    "id": "abc123",
-    "name": "Downtown Seattle",
-    "address": "123 Main St, Seattle, WA 98101, US",
-    "address_line_1": "123 Main St",
-    "city": "Seattle",
-    "state": "WA",
-    "postcode": "98101",
-    "country": "US",
-    "lat": 47.6062,
-    "lng": -122.3321,
-    "phone": "(206) 555-1234",
-    "visible": true,
-    "slug": "downtown-seattle",
-    "created_at": "2024-01-20T14:45:00Z",
-    "updated_at": "2024-01-20T14:45:00Z"
+  "hours": {
+    "mon":"09:00-17:00",
+    "tue":"09:00-17:00",
+    "wed":"09:00-17:00",
+    "thu":"09:00-17:00",
+    "fri":"09:00-17:00",
+    "sat":"10:00-14:00",
+    "sun":"closed"
   }
 }
 ```
 
-## Full Example
+Do not send an hours array or weekday objects containing `open`/`close` keys.
 
-```bash
-curl -X POST "https://api.storerocket.io/api/v2/projects/{project_id}/locations" \
-  -H "X-API-Key: your_api_key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Downtown Seattle",
-    "address_line_1": "123 Main St",
-    "address_line_2": "Suite 500",
-    "city": "Seattle",
-    "state": "WA",
-    "postcode": "98101",
-    "country": "US",
-    "phone": "(206) 555-1234",
-    "email": "seattle@example.com",
-    "url": "https://example.com/seattle",
-    "visible": true,
-    "location_type": "Flagship Store",
-    "filters": "Drive-Through, Wheelchair Accessible",
-    "fields": {
-      "Manager": "John Smith",
-      "Parking": "Underground garage"
-    },
-    "hours": {
-      "mon": { "open": "09:00", "close": "18:00" },
-      "tue": { "open": "09:00", "close": "18:00" },
-      "wed": { "open": "09:00", "close": "18:00" },
-      "thu": { "open": "09:00", "close": "18:00" },
-      "fri": { "open": "09:00", "close": "21:00" },
-      "sat": { "open": "10:00", "close": "17:00" },
-      "sun": { "closed": true }
-    }
-  }'
-```
+## Additional fields
 
-## Errors
+| Field | Format |
+| --- | --- |
+| `slug` | Location slug |
+| `address` | Full address; generated from components when needed |
+| `display_address` | Address displayed to visitors |
+| `timezone` | Location timezone |
+| `facebook`, `instagram`, `twitter`, `yelp`, `youtube`, `tiktok` | Social profile strings |
+| `filters` | Filter names as a list or comma-separated string |
+| `fields` | Named custom-field object, such as `{"Manager":"Sam"}` |
+| `callsToAction` | Named object, such as `{"Book":"https://example.com/book"}` |
+| `location_type` | Name of a location type in the project |
+| `marker_id` | Integer ID of a marker in the project |
+| `cover` | Image URL or the project's stored image name |
 
-| Status | Description |
-|--------|-------------|
-| `422` | Validation error (missing required fields) |
-| `401` | Invalid API key |
+The response's `socials` list is derived; send individual public social field names when writing.
+POST can geocode synchronously when either coordinate is missing or zero. Supplying both nonzero coordinates avoids depending on a geocoding result. Zero passes validation, but POST and PUT retain this older geocoding behavior; PATCH preserves supplied zero coordinates.
+
+Errors: `401`, `403`, `404`, `422`, `429`. Invalid input does not create a partially populated location. See [errors](/api/errors).

@@ -1,0 +1,38 @@
+---
+title: 'Update with PUT'
+description: 'The existing update contract, retained for supported integrations.'
+api: 'PUT /api/v2/projects/{project_id}/locations/{location_id}'
+---
+
+Requires `location:update` and project API access. `name` and `city` are required on each request; a street address is optional.
+For a change that should preserve all omitted choices, use [PATCH](/api/locations/update).
+
+<ParamField path="project_id" type="string" required>The public project ID.</ParamField>
+<ParamField path="location_id" type="string" required>The public location ID.</ParamField>
+<ParamField body="name" type="string" required>Location name.</ParamField>
+<ParamField body="city" type="string" required>Location city.</ParamField>
+<ParamField body="phone" type="string">Phone number.</ParamField>
+
+<RequestExample>
+```bash
+curl -X PUT 'https://storerocket.io/api/v2/projects/PROJECT_ID/locations/LOCATION_ID' \
+  -H 'Authorization: Bearer YOUR_TOKEN' \
+  -H 'Accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Downtown Store","city":"Seattle","phone":"555-0101"}'
+```
+</RequestExample>
+
+Returns `200` and the [location resource](/api/locations/get#response-format). Field descriptions are on [Create a location](/api/locations/create).
+
+## Existing PUT behavior
+
+- Omitted scalar values generally remain saved; PUT does not have PATCH's preserve-all-omissions contract.
+- Supplied `fields` and `callsToAction` objects replace their respective attachments. Their omitted keys are removed; an empty object clears those attachments.
+- Supplied `filters` replaces the filter list; an empty list clears it. An omitted filter list is preserved.
+- Omitted marker and location-type selections use the project's defaults.
+- Omitted hours, null hours, and `{}` leave any existing hours unchanged. A nonempty hours object must include all seven days; it replaces the saved week.
+- Use PATCH for `hours:null` clearing or partial weekdays.
+- PUT can geocode synchronously when either coordinate is missing or zero; it retains the older behavior described under [addresses and coordinates](/api/errors#addresses-and-coordinates).
+
+Errors: `401`, `403`, `404`, `422`, `429`. Invalid input saves no part of the location update. See [errors](/api/errors).

@@ -7,7 +7,7 @@
     "light": "#A78BFA",
     "dark": "#6D28D9"
   },
-  "favicon": "/favicon.svg",
+  "favicon": "/favicon.png",
   "logo": {
     "light": "/logo/light.svg",
     "dark": "/logo/dark.svg"
@@ -15,89 +15,49 @@
   "navbar": {
     "links": [
       {
-        "label": "Dashboard",
-        "href": "https://app.storerocket.io"
+        "label": "Help center",
+        "href": "https://help.storerocket.io"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Get Started",
-      "href": "https://app.storerocket.io/register"
+      "label": "Dashboard",
+      "href": "https://storerocket.io/app/api-tokens"
     }
   },
   "navigation": {
-    "dropdowns": [
+    "groups": [
       {
-        "dropdown": "Widget",
-        "groups": [
-          {
-            "group": "Getting Started",
-            "pages": [
-              "widget/introduction",
-              "widget/installation",
-              "widget/quick-start"
-            ]
-          },
-          {
-            "group": "Configuration",
-            "pages": [
-              "widget/options",
-              "widget/styling",
-              "widget/localization"
-            ]
-          },
-          {
-            "group": "JavaScript API",
-            "pages": [
-              "widget/events",
-              "widget/methods",
-              "widget/callbacks"
-            ]
-          },
-          {
-            "group": "Advanced",
-            "pages": [
-              "widget/spa-integration",
-              "widget/custom-markers",
-              "widget/filters"
-            ]
-          }
+        "group": "Start here",
+        "pages": [
+          "index",
+          "api/introduction",
+          "api/authentication",
+          "api/errors"
         ]
       },
       {
-        "dropdown": "REST API",
-        "groups": [
-          {
-            "group": "Overview",
-            "pages": [
-              "api/introduction",
-              "api/authentication",
-              "api/errors"
-            ]
-          },
-          {
-            "group": "Locations",
-            "pages": [
-              "api/locations/list",
-              "api/locations/get",
-              "api/locations/create",
-              "api/locations/update",
-              "api/locations/delete"
-            ]
-          },
-          {
-            "group": "Filters",
-            "pages": [
-              "api/filters/list",
-              "api/filters/create"
-            ]
-          },
-          {
-            "group": "Analytics",
-            "pages": [
-              "api/analytics/overview"
-            ]
-          }
+        "group": "Account",
+        "pages": [
+          "api/user",
+          "api/projects"
+        ]
+      },
+      {
+        "group": "Locations",
+        "pages": [
+          "api/locations/list",
+          "api/locations/get",
+          "api/locations/create",
+          "api/locations/update",
+          "api/locations/put",
+          "api/locations/delete"
+        ]
+      },
+      {
+        "group": "Existing integrations",
+        "pages": [
+          "api/legacy"
         ]
       }
     ]
@@ -107,5 +67,22 @@
       "x": "https://x.com/storerocket",
       "github": "https://github.com/storerocket"
     }
-  }
+  },
+  "api": {
+    "mdx": {
+      "server": "https://storerocket.io",
+      "auth": {
+        "method": "bearer"
+      }
+    },
+    "playground": {
+      "display": "simple"
+    }
+  },
+  "redirects": [
+    {
+      "source": "/api",
+      "destination": "/api/introduction"
+    }
+  ]
 }

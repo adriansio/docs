@@ -1,70 +1,27 @@
 ---
-title: 'Delete Location'
-description: 'Remove a location'
+title: 'Delete a location'
+description: 'Remove a location from a project.'
 api: 'DELETE /api/v2/projects/{project_id}/locations/{location_id}'
 ---
 
-Permanently deletes a location.
+Requires `location:delete` and project API access. The location must belong to the project in the URL.
 
-## Request
+<ParamField path="project_id" type="string" required>The public project ID.</ParamField>
+<ParamField path="location_id" type="string" required>The public location ID.</ParamField>
 
+<RequestExample>
 ```bash
-curl -X DELETE "https://api.storerocket.io/api/v2/projects/{project_id}/locations/{location_id}" \
-  -H "X-API-Key: your_api_key"
+curl -X DELETE 'https://storerocket.io/api/v2/projects/PROJECT_ID/locations/LOCATION_ID' \
+  -H 'Authorization: Bearer YOUR_TOKEN' \
+  -H 'Accept: application/json'
 ```
+</RequestExample>
 
-## Path Parameters
-
-<ParamField path="project_id" type="string" required>
-  Your project's hashid.
-</ParamField>
-
-<ParamField path="location_id" type="string" required>
-  The location's hashid.
-</ParamField>
-
-## Response
-
+<ResponseExample>
 ```json
-{
-  "success": true
-}
+{"success":true}
 ```
+</ResponseExample>
 
-## Notes
-
-<Warning>
-  This action is permanent. Deleted locations cannot be recovered.
-</Warning>
-
-- Associated data (hours, custom field values, filter assignments) is also deleted
-- Images uploaded to the location remain in your media library
-- Analytics data for the location is preserved
-
-## Errors
-
-| Status | Description |
-|--------|-------------|
-| `404` | Location not found |
-| `401` | Invalid API key |
-
-## Bulk Delete
-
-To delete multiple locations, make separate DELETE requests:
-
-```javascript
-const locationIds = ['abc123', 'def456', 'ghi789'];
-
-await Promise.all(
-  locationIds.map(id =>
-    fetch(`https://api.storerocket.io/api/v2/projects/${projectId}/locations/${id}`, {
-      method: 'DELETE',
-      headers: { 'X-API-Key': apiKey }
-    })
-  )
-);
-```
-
-<Note>
-  Respect rate limits when deleting many locations. Consider spacing requests or upgrading your plan for higher limits.
-</Note>
+A successful deletion returns `200`. The location is removed from the project and its widget results.
+Errors: `401` authentication, `403` access/permission, `404` inaccessible project or location, `429` rate limit. See [errors](/api/errors).

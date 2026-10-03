@@ -1,134 +1,88 @@
 ---
-title: 'Update Location'
-description: 'Update an existing location'
-api: 'PUT /api/v2/projects/{project_id}/locations/{location_id}'
+title: 'Update selected fields'
+description: 'PATCH preserves everything you leave out and supports explicit clearing.'
+api: 'PATCH /api/v2/projects/{project_id}/locations/{location_id}'
 ---
 
-Updates a location and returns the updated resource.
+Requires `location:update` and project API access. Send a JSON object containing only the fields you want to change. Omitted fields and attachments keep their saved values.
+Returns `200` and the [updated location](/api/locations/get#response-format).
 
-## Request
+<ParamField path="project_id" type="string" required>The public project ID.</ParamField>
+<ParamField path="location_id" type="string" required>The public location ID belonging to the project.</ParamField>
+<ParamField body="phone" type="string | null">Change the phone, or send null to clear it.</ParamField>
+<ParamField body="name" type="string">If supplied, a nonempty string of at most 255 characters.</ParamField>
+<ParamField body="city" type="string">If supplied, a nonempty string of at most 255 characters.</ParamField>
+<ParamField body="visible" type="boolean">Show or hide the location. `false` is valid; null is not.</ParamField>
+<ParamField body="hours" type="object | null">Update selected weekdays, send `{}` to preserve hours, or null to remove the schedule.</ParamField>
+<ParamField body="fields" type="object | null">Merge named custom fields. Null values remove attachments.</ParamField>
+<ParamField body="callsToAction" type="object | null">Merge named calls to action. Null values remove attachments.</ParamField>
+<ParamField body="filters" type="array | string | null">Replace the filter list; `[]` or null clears it.</ParamField>
 
+<RequestExample>
 ```bash
-curl -X PUT "https://api.storerocket.io/api/v2/projects/{project_id}/locations/{location_id}" \
-  -H "X-API-Key: your_api_key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Downtown Seattle - Flagship",
-    "phone": "(206) 555-9999"
-  }'
+curl -X PATCH 'https://storerocket.io/api/v2/projects/PROJECT_ID/locations/LOCATION_ID' \
+  -H 'Authorization: Bearer YOUR_TOKEN' \
+  -H 'Accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{"phone":"555-0101"}'
+```
+</RequestExample>
+
+You do not need to resend the name, city, hours, filters, or other saved information. See [Create a location](/api/locations/create#additional-fields) for public field names.
+
+## Opening hours
+
+Update just Monday without changing other days:
+
+```json
+{"hours":{"mon":"09:00-17:00"}}
 ```
 
-## Path Parameters
+Short or full weekday names are accepted. Values are strings such as `09:00-17:00`, `closed`, or null. If a schedule does not yet exist, omitted days stay unset.
 
-<ParamField path="project_id" type="string" required>
-  Your project's hashid.
-</ParamField>
+| Input | Result |
+| --- | --- |
+| Omit `hours` | Keep the entire schedule |
+| `"hours": {}` | Keep the entire schedule |
+| `"hours": null` | Remove the schedule from this location |
+| `"hours": {"mon": null}` | Clear Monday only |
+| `"hours": {"mon": "closed"}` | Mark Monday as closed |
 
-<ParamField path="location_id" type="string" required>
-  The location's hashid.
-</ParamField>
+Hours are an object, not an array. Avoid conflicting short and full names for the same day. Removing a schedule from a location does not delete a reusable hours template.
 
-## Body Parameters
-
-All fields are optional. Only provided fields are updated.
-
-See [Create Location](/api/locations/create) for field descriptions.
-
-<Note>
-  Required fields (`name`, `address_line_1`, `city`) must be provided even for partial updates.
-</Note>
-
-## Examples
-
-### Update name and phone
-
-```bash
-curl -X PUT "https://api.storerocket.io/api/v2/projects/{project_id}/locations/{location_id}" \
-  -H "X-API-Key: your_api_key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Downtown Seattle - Flagship",
-    "address_line_1": "123 Main St",
-    "city": "Seattle",
-    "phone": "(206) 555-9999"
-  }'
-```
-
-### Update hours
-
-```bash
-curl -X PUT "https://api.storerocket.io/api/v2/projects/{project_id}/locations/{location_id}" \
-  -H "X-API-Key: your_api_key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Downtown Seattle",
-    "address_line_1": "123 Main St",
-    "city": "Seattle",
-    "hours": {
-      "mon": { "open": "08:00", "close": "20:00" },
-      "tue": { "open": "08:00", "close": "20:00" },
-      "wed": { "open": "08:00", "close": "20:00" },
-      "thu": { "open": "08:00", "close": "20:00" },
-      "fri": { "open": "08:00", "close": "22:00" },
-      "sat": { "open": "09:00", "close": "18:00" },
-      "sun": { "closed": true }
-    }
-  }'
-```
-
-### Update filters
-
-```bash
-curl -X PUT "https://api.storerocket.io/api/v2/projects/{project_id}/locations/{location_id}" \
-  -H "X-API-Key: your_api_key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Downtown Seattle",
-    "address_line_1": "123 Main St",
-    "city": "Seattle",
-    "filters": "Drive-Through, Open 24 Hours, EV Charging"
-  }'
-```
-
-### Hide location
-
-```bash
-curl -X PUT "https://api.storerocket.io/api/v2/projects/{project_id}/locations/{location_id}" \
-  -H "X-API-Key: your_api_key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Downtown Seattle",
-    "address_line_1": "123 Main St",
-    "city": "Seattle",
-    "visible": false
-  }'
-```
-
-## Response
-
-Returns the full updated location object.
+## Custom fields and calls to action
 
 ```json
 {
-  "data": {
-    "id": "abc123",
-    "name": "Downtown Seattle - Flagship",
-    "address": "123 Main St, Seattle, WA 98101",
-    "phone": "(206) 555-9999",
-    "visible": true,
-    "updated_at": "2024-01-20T15:30:00Z"
-  }
+  "fields":{"Manager":"Sam","Old label":null},
+  "callsToAction":{"Book":"https://example.com/book"}
 }
 ```
 
-## Geocoding
+Supplied keys are added or updated; omitted keys keep their attachments. A key with a null value removes that attachment. `{}` does nothing. Null for the whole object clears every attachment of that kind from this location.
 
-If you update address fields without providing `lat`/`lng`, the location will be automatically re-geocoded.
+## Filters, markers, types, and cover
 
-## Errors
+| Input | Result |
+| --- | --- |
+| Omit `filters` | Keep the filter list |
+| Supply `filters` | Replace the list |
+| `"filters": []` or null | Clear the list |
+| Omit `marker_id` or `location_type` | Keep the selection |
+| `"marker_id": null` or `"location_type": null` | Restore the corresponding project default |
+| `"cover": null` | Clear the cover association and external cover URL |
 
-| Status | Description |
-|--------|-------------|
-| `404` | Location not found |
-| `422` | Validation error |
-| `401` | Invalid API key |
+A supplied marker ID, location-type name, or stored cover image must belong to this project. An invalid selection returns `422` and saves nothing.
+
+## Other fields and generated values
+
+Send null to clear nullable text fields, including phone, email, website, and social profiles. `name`, `city`, and `visible` cannot be null. Zero coordinates and false visibility are valid.
+
+Use [public field names](/api/locations/create#additional-fields). Internal fields such as `project_id` and `location_type_id` are ignored. `socials` is a response field; send the individual profile fields.
+
+Addresses and slugs retain their generation behavior: clearing a generated address can regenerate it from saved components, and clearing a slug can generate one from the location. PATCH touching address/coordinate fields queues geocoding only if a coordinate is missing. Other PATCH requests do not trigger geocoding. The immediate response may precede a queued geocode result.
+
+## Atomic validation
+
+Invalid input returns `422` with `message` and `errors`; no portion of that update is saved. See [errors](/api/errors).
+This endpoint accepts `application/json`; its object/array/null behavior is the StoreRocket contract described here.

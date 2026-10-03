@@ -1,182 +1,59 @@
 ---
-title: 'Errors'
-description: 'API error codes and handling'
+title: 'Errors and retries'
+description: 'Use HTTP statuses and actionable JSON field errors.'
 ---
 
-The API uses standard HTTP status codes and returns error details in JSON.
+V2 API errors return JSON, including when the `Accept` header is omitted.
+Use the HTTP status to decide whether to correct your request or retry it.
 
-## Error Response Format
+| Status | Meaning | Action |
+| --- | --- | --- |
+| 200 | Request succeeded | Read the response body |
+| 401 | Authentication failed | Check your Bearer token |
+| 403 | API access or a token permission is missing | Check the project and token permissions |
+| 404 | Project/location was not found or is outside your access | Check both public IDs and project membership |
+| 422 | Request validation failed | Correct the named fields |
+| 429 | Rate limit reached | Wait for `Retry-After` |
+| 500 | Server error | Check the result before retrying a write |
+
+## Validation errors
 
 ```json
 {
-  "error": "Validation Error",
-  "message": "The name field is required.",
+  "message": "The city field is required.",
   "errors": {
-    "name": ["The name field is required."],
     "city": ["The city field is required."]
   }
 }
 ```
 
----
+The `message` summarizes the failure. The `errors` object identifies each invalid field; messages can differ depending on the request.
+A rejected V2 location update does not save a subset of its fields.
 
-## HTTP Status Codes
+### Empty hours and incomplete weeks
 
-| Code | Meaning |
-|------|---------|
-| `200` | Success |
-| `201` | Created (POST requests) |
-| `400` | Bad Request - Invalid parameters |
-| `401` | Unauthorized - Invalid or missing API key |
-| `403` | Forbidden - Insufficient permissions |
-| `404` | Not Found - Resource doesn't exist |
-| `422` | Validation Error - Invalid data |
-| `429` | Too Many Requests - Rate limit exceeded |
-| `500` | Server Error - Something went wrong |
+`"hours": {}` is valid and leaves hours unchanged. `"hours": []` is invalid: hours must be a weekday object.
 
----
-
-## Common Errors
-
-### 401 Unauthorized
+A nonempty POST or PUT hours object must include all seven days. Use PATCH to update selected days instead:
 
 ```json
-{
-  "error": "Unauthorized",
-  "message": "Invalid API key"
-}
+{"hours":{"mon":"09:00-17:00"}}
 ```
 
-**Causes:**
-- Missing `X-API-Key` header
-- Invalid or revoked API key
-- Key from wrong project
+Weekday values are strings or null, not objects such as `{"open":"09:00","close":"17:00"}`. See [opening hours](/api/locations/update#opening-hours).
 
-### 404 Not Found
+## Rate limits and retries
 
-```json
-{
-  "error": "Not Found",
-  "message": "Location not found"
-}
-```
+The current shared API limit is 1,000 requests per minute. Read `X-RateLimit-Limit` and `X-RateLimit-Remaining` on responses; a `429` also includes `Retry-After`.
+Wait for that interval before retrying, and space subsequent requests out.
 
-**Causes:**
-- Invalid location ID
-- Location was deleted
-- Location belongs to different project
+Retrying a POST can create another location if the original request succeeded before the connection failed. Check whether the location already exists before retrying a create.
 
-### 422 Validation Error
+## Addresses and coordinates
 
-```json
-{
-  "error": "Validation Error",
-  "message": "The given data was invalid.",
-  "errors": {
-    "name": ["The name field is required."],
-    "address_line_1": ["The address line 1 field is required."],
-    "city": ["The city field is required."]
-  }
-}
-```
+`lat` must be between -90 and 90; `lng` must be between -180 and 180. Zero is valid. The returned address field is `address`.
 
-**Causes:**
-- Missing required fields
-- Invalid field format
-- Value out of range
+POST and PUT can geocode synchronously when either coordinate is missing or zero. Both accept zero during validation but retain this older geocoding behavior.
 
-### 429 Rate Limit Exceeded
-
-```json
-{
-  "error": "Too Many Requests",
-  "message": "Rate limit exceeded. Try again in 60 seconds.",
-  "retry_after": 60
-}
-```
-
-**Solution:**
-- Wait for the `retry_after` period
-- Implement exponential backoff
-- Upgrade plan for higher limits
-
----
-
-## Handling Errors
-
-### PHP Example
-
-```php
-$response = Http::withHeaders([
-    'X-API-Key' => $apiKey,
-])->post($url, $data);
-
-if ($response->failed()) {
-    $error = $response->json();
-
-    match ($response->status()) {
-        401 => throw new AuthenticationException($error['message']),
-        404 => throw new NotFoundException($error['message']),
-        422 => throw new ValidationException($error['errors']),
-        429 => sleep($error['retry_after'] ?? 60),
-        default => throw new ApiException($error['message']),
-    };
-}
-
-return $response->json('data');
-```
-
-### JavaScript Example
-
-```javascript
-async function apiRequest(url, options = {}) {
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      'X-API-Key': API_KEY,
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-
-    if (response.status === 429) {
-      const retryAfter = error.retry_after || 60;
-      await new Promise(r => setTimeout(r, retryAfter * 1000));
-      return apiRequest(url, options); // Retry
-    }
-
-    throw new Error(error.message);
-  }
-
-  return response.json();
-}
-```
-
----
-
-## Retry Strategy
-
-For transient errors (5xx, 429), implement exponential backoff:
-
-```javascript
-async function withRetry(fn, maxRetries = 3) {
-  for (let attempt = 0; attempt < maxRetries; attempt++) {
-    try {
-      return await fn();
-    } catch (error) {
-      if (attempt === maxRetries - 1) throw error;
-
-      const delay = Math.min(1000 * 2 ** attempt, 30000);
-      await new Promise(r => setTimeout(r, delay));
-    }
-  }
-}
-
-// Usage
-const locations = await withRetry(() =>
-  apiRequest('/api/v2/projects/abc123/locations')
-);
-```
+A PATCH affecting address or coordinate fields queues geocoding only if a coordinate is missing; it preserves supplied zero coordinates. The immediate response can still have null coordinates.
+For precise pins, supply both coordinates. Changing a phone or other unrelated field with PATCH does not trigger geocoding.

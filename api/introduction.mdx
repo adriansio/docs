@@ -1,128 +1,64 @@
 ---
-title: 'Introduction'
-description: 'Programmatically manage your StoreRocket locations'
+title: 'Overview'
+description: 'The current API, its endpoints, and how updates work.'
 ---
 
-The StoreRocket REST API lets you manage locations, filters, and retrieve analytics programmatically.
+The StoreRocket REST API lets you list your projects and create, read, update, and delete their locations.
+Location operations require a project with API access, available on the Business plan.
 
 ## Base URL
 
-```
-https://api.storerocket.io
+```text
+https://storerocket.io/api/v2
 ```
 
-## Authentication
-
-All requests require an API key passed in the `X-API-Key` header:
+Use an [API token](/api/authentication) in the `Authorization` header. Send JSON request bodies with `Content-Type: application/json`. `Accept: application/json` is recommended; V2 errors return JSON even when it is omitted.
 
 ```bash
-curl -X GET "https://api.storerocket.io/api/v2/projects/{project_id}/locations" \
-  -H "X-API-Key: your_api_key"
+curl 'https://storerocket.io/api/v2/projects' \
+  -H 'Authorization: Bearer YOUR_TOKEN' \
+  -H 'Accept: application/json'
 ```
 
-Get your API key from **Dashboard → Developer → API Keys**.
+Project and location IDs are the public IDs returned by the API. Keep them as strings.
 
-<Warning>
-  Keep your API key secret. Don't expose it in client-side code.
-</Warning>
+## Endpoints
 
----
+| Method | Path | Purpose |
+| --- | --- | --- |
+| GET | `/user` | [Read your user profile](/api/user) |
+| GET | `/projects` | [List your projects](/api/projects) |
+| GET | `/projects/{project_id}/locations` | [List locations](/api/locations/list) |
+| GET | `/projects/{project_id}/locations/{location_id}` | [Read a location](/api/locations/get) |
+| POST | `/projects/{project_id}/locations` | [Create a location](/api/locations/create) |
+| PATCH | `/projects/{project_id}/locations/{location_id}` | [Update selected fields](/api/locations/update) |
+| PUT | `/projects/{project_id}/locations/{location_id}` | [Use the existing update contract](/api/locations/put) |
+| DELETE | `/projects/{project_id}/locations/{location_id}` | [Delete a location](/api/locations/delete) |
 
-## Request Format
-
-- **Content-Type:** `application/json` for POST/PUT requests
-- **Accept:** `application/json`
+## Use PATCH for partial updates
 
 ```bash
-curl -X POST "https://api.storerocket.io/api/v2/projects/{project_id}/locations" \
-  -H "X-API-Key: your_api_key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Downtown Store",
-    "address_line_1": "123 Main St",
-    "city": "Seattle"
-  }'
+curl -X PATCH 'https://storerocket.io/api/v2/projects/PROJECT_ID/locations/LOCATION_ID' \
+  -H 'Authorization: Bearer YOUR_TOKEN' \
+  -H 'Accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{"phone":"555-0101"}'
 ```
 
----
+Fields you omit keep their saved values. A successful update returns `200` and the location. Invalid input returns `422` with field errors and saves no part of the update.
 
-## Response Format
+`POST` and `PUT` retain their existing requirements, including `name` and `city`. `PUT` can replace supplied custom-field and call-to-action attachments and reset omitted marker/type selections to project defaults. Use [PATCH](/api/locations/update) when you want to preserve everything you leave out.
 
-All responses are JSON:
+## Locations without opening hours
 
-```json
-{
-  "data": {
-    "id": "abc123",
-    "name": "Downtown Store",
-    "address": "123 Main St, Seattle, WA 98101"
-  }
-}
-```
+Omit `hours`, or send `"hours": {}`, when creating a coming-soon location. Empty hours are accepted on POST, PUT, and PATCH; they leave any existing schedule unchanged.
+Use `"hours": null` with PATCH to remove an existing schedule. See [opening hours](/api/locations/update#opening-hours) for weekday updates and explicit clearing.
 
-Paginated responses include metadata:
+## Rate limits
 
-```json
-{
-  "data": [...],
-  "meta": {
-    "current_page": 1,
-    "last_page": 5,
-    "per_page": 15,
-    "total": 73
-  },
-  "links": {
-    "first": "https://api.storerocket.io/api/v2/.../locations?page=1",
-    "last": "https://api.storerocket.io/api/v2/.../locations?page=5",
-    "prev": null,
-    "next": "https://api.storerocket.io/api/v2/.../locations?page=2"
-  }
-}
-```
+The current API uses a shared limit of 1,000 requests per minute. Read the response's rate-limit headers. If a request returns `429`, wait for the `Retry-After` interval before retrying. See [errors](/api/errors#rate-limits-and-retries).
 
----
+## Existing integrations
 
-## API Versions
-
-| Version | Status | Notes |
-|---------|--------|-------|
-| V2 | **Current** | Full CRUD for locations |
-| V1 | Deprecated | Use V2 for new integrations |
-
----
-
-## Rate Limits
-
-| Plan | Requests/minute |
-|------|-----------------|
-| Starter | 60 |
-| Galaxy | 120 |
-| Supernova | 300 |
-| Cosmos | 600 |
-
-Rate limit headers are included in responses:
-
-```
-X-RateLimit-Limit: 120
-X-RateLimit-Remaining: 115
-X-RateLimit-Reset: 1609459200
-```
-
----
-
-## Quick Links
-
-<CardGroup cols={2}>
-  <Card title="Authentication" icon="key" href="/api/authentication">
-    API key setup and security.
-  </Card>
-  <Card title="Locations" icon="location-dot" href="/api/locations/list">
-    CRUD operations for locations.
-  </Card>
-  <Card title="Filters" icon="filter" href="/api/filters/list">
-    Manage location filters.
-  </Card>
-  <Card title="Errors" icon="triangle-exclamation" href="/api/errors">
-    Error codes and handling.
-  </Card>
-</CardGroup>
+[V1 remains a separate legacy contract](/api/legacy). These pages do not change your existing URLs or require an API migration.
+The examples use placeholders. Replace `YOUR_TOKEN`, `PROJECT_ID`, and `LOCATION_ID` with your own values before running a request.

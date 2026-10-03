@@ -1,0 +1,31 @@
+---
+title: 'Get user'
+description: 'Read the profile associated with your token.'
+api: 'GET /api/v2/user'
+---
+
+Returns the authenticated user's profile.
+
+<RequestExample>
+```bash
+curl 'https://storerocket.io/api/v2/user' \
+  -H 'Authorization: Bearer YOUR_TOKEN' \
+  -H 'Accept: application/json'
+```
+</RequestExample>
+
+<ResponseExample>
+```json
+{
+  "data": {
+    "id": "USER_ID",
+    "name": "Example User",
+    "email": "user@example.com",
+    "company": "Example Company",
+    "profile_photo_url": "https://example.com/avatar.png"
+  }
+}
+```
+</ResponseExample>
+
+A successful request returns `200`. An invalid token returns `401`.

@@ -1,0 +1,6 @@
+# Keep unshipped Phoenix reference drafts out of this current API release.
+widget/
+api/filters/
+api/analytics/
+images/
+*.backup

@@ -1,0 +1,12 @@
+---
+title: 'Legacy V1 API'
+description: 'Keep existing integrations on their supported contract.'
+---
+
+Existing V1 integrations use the separate `/api/locations` and `/api/leads` routes, without a `/v1` path segment. They retain their existing authentication and payload contract.
+The current V2 reference does not change those integrations. Use [V2](/api/introduction) for new location integrations.
+
+The older [Postman reference](https://documenter.getpostman.com/view/3184572/SVSDQX7g?version=latest) remains available as a legacy reference. It does not describe the new V2 PATCH contract.
+
+V2 currently provides user/project reads and location operations.
+For help with an existing integration, [message StoreRocket support](https://help.storerocket.io).
