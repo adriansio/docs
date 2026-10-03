@@ -1,43 +1,48 @@
-# Mintlify Starter Kit
+# StoreRocket API documentation
 
-Use the starter kit to get your docs deployed and ready to customize.
+The API reference is published at [docs.storerocket.io](https://docs.storerocket.io)
+using Mintlify. This repository contains its pages, examples, branding and navigation.
 
-Click the green **Use this template** button at the top of this repo to copy the Mintlify starter kit. The starter kit contains examples with
+## What to update
 
-- Guide pages
-- Navigation
-- Customizations
-- API reference pages
-- Use of popular components
+Read [AGENTS.md](AGENTS.md) before working here. Important StoreRocket changes
+must include the affected documentation and examples in the same release.
 
-**[Follow the full quickstart guide](https://starter.mintlify.com/quickstart)**
+- `docs.json` defines the published navigation and native API playground.
+- `api/` contains the supported V2 reference and separate legacy V1 guides.
+- `files/storerocket-v2.postman_collection.json` is an optional Postman client
+  collection. Postman is being retired as the documentation host.
+- `custom.css` contains the bounded native-layout adjustments.
+- `logo/` and `favicon.png` use the official StoreRocket branding.
 
-## Development
+Verify behavior against the supported implementation in `adriansio/storerocket`.
+Production uses `master`; do not document unshipped Phoenix behavior as available.
+Excluded starter pages are not proof that an API operation exists.
 
-Install the [Mintlify CLI](https://www.npmjs.com/package/mint) to preview your documentation changes locally. To install, use the following command:
+## Preview and checks
 
+With the Mintlify CLI available, run these commands from this repository:
+
+```bash
+mint dev --no-open
+mint validate
+mint broken-links
 ```
-npm i -g mint
-```
 
-Run the following command at the root of your documentation, where your `docs.json` is located:
+Use the local preview to check desktop and mobile, both themes, links, search,
+and the exact copied code. Parse changed JSON and shell examples without running
+write requests against customer accounts. Examples use placeholder credentials.
 
-```
-mint dev
-```
+On Adriano's Mac, the configured trusted HTTPS preview is
+[https://sr-api-docs.test](https://sr-api-docs.test).
 
-View your local preview at `http://localhost:3000`.
+## Publishing
 
-## Publishing changes
+Open a reviewed PR against `main`. Adriano merges; never push directly to
+`main` or merge on his behalf. Mintlify publishes `main` automatically.
+After the merge, verify the actual pages and examples at
+[docs.storerocket.io](https://docs.storerocket.io).
 
-Install our GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app) to propagate changes from your repo to your deployment. Changes are deployed to production automatically after pushing to the default branch.
-
-## Need help?
-
-### Troubleshooting
-
-- If your dev environment isn't running: Run `mint update` to ensure you have the most recent version of the CLI.
-- If a page loads as a 404: Make sure you are running in a folder with a valid `docs.json`.
-
-### Resources
-- [Mintlify documentation](https://mintlify.com/docs)
+StoreRocket dashboard links and Intercom articles live in the application
+repository. Link their companion changes when needed; an app deployment does not
+publish an Intercom article.

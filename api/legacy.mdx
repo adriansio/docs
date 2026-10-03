@@ -1,12 +1,99 @@
 ---
 title: 'Legacy V1 API'
-description: 'Keep existing integrations on their supported contract.'
+description: 'Use the supported V1 location and lead endpoints with your existing token.'
 ---
 
-Existing V1 integrations use the separate `/api/locations` and `/api/leads` routes, without a `/v1` path segment. They retain their existing authentication and payload contract.
-The current V2 reference does not change those integrations. Use [V2](/api/introduction) for new location integrations.
+V1 remains available for existing integrations. This reference documents the same URLs, credentials, and payloads your integration already uses.
 
-The older [Postman reference](https://documenter.getpostman.com/view/3184572/SVSDQX7g?version=latest) remains available as a legacy reference. It does not describe the new V2 PATCH contract.
+The base URL is `https://storerocket.io/api`. There is **no `/v1` segment** in a V1 URL.
 
-V2 currently provides user/project reads and location operations.
-For help with an existing integration, [message StoreRocket support](https://help.storerocket.io).
+<CardGroup cols={2}>
+  <Card title="V1 locations" icon="location-dot" href="/api/legacy-locations">
+    List, read, create, update, and delete locations.
+  </Card>
+  <Card title="V1 leads" icon="inbox" href="/api/legacy-leads">
+    List, read, and delete captured leads.
+  </Card>
+</CardGroup>
+
+## Authenticate a request
+
+Use the **legacy API token** already configured in your V1 integration. Send it in the `Authorization` header:
+
+```bash
+curl 'https://storerocket.io/api/locations?limit=1' \
+  -H 'Authorization: Bearer YOUR_LEGACY_TOKEN' \
+  -H 'Accept: application/json'
+```
+
+Replace `YOUR_LEGACY_TOKEN` with your existing token. For JSON writes, also send `Content-Type: application/json`.
+
+V1 also accepts the legacy `api_token` parameter. Prefer the header for new requests so the token does not appear in the URL.
+
+<Note>
+  The current [API Tokens dashboard](https://storerocket.io/app/api-tokens) creates **V2 tokens**. V1 and V2 tokens are separate credentials; a newly created V2 token does not authenticate a V1 request.
+
+  Keep a working V1 token when using this reference. If you no longer have your legacy token, [contact support](https://help.storerocket.io).
+</Note>
+
+## Project scope and IDs
+
+Every V1 request operates on the token owner's **personal project**. V1 URLs do not accept a project ID, and changing the project selected in the dashboard does not change this scope.
+
+Location and lead IDs are numeric database IDs returned as strings, such as `"12345"`. Use an ID returned by the matching V1 list endpoint. V2 public IDs are not interchangeable with V1 IDs.
+
+The personal project's plan must include REST API access.
+
+## V1 and V2 differences
+
+| Contract | V1 | V2 |
+| --- | --- | --- |
+| Location URLs | `/api/locations` | `/api/v2/projects/{project_id}/locations` |
+| Credentials | Existing legacy token | Token from the current API Tokens dashboard |
+| Project | Token owner's personal project | Project identified in the URL |
+| IDs | Numeric IDs, returned as strings | Public project and location IDs |
+| One location | Location object directly | `data` object containing the location |
+| Updates | PUT; `name` is required | PUT or partial PATCH |
+| Lead endpoints | List, read, and delete | No lead endpoints |
+
+Use [V2](/api/introduction) for new **location** integrations. You do not need to migrate an existing integration to use these V1 docs. For lead reads, use the [V1 lead endpoints](/api/legacy-leads).
+
+## Errors and rate limits
+
+Send `Accept: application/json` on every request to receive JSON errors.
+
+| Status | Meaning | What to check |
+| --- | --- | --- |
+| `401` | Authentication failed | Use your V1 token, not a V2 token. |
+| `403` | REST API access is unavailable | Check the personal project's plan. |
+| `404` | Location or lead was not found | Check its V1 ID and project scope. |
+| `422` | A location write failed validation | Correct the fields listed in `errors`. |
+| `429` | Rate limit reached | Wait for the `Retry-After` period. |
+| `500` | The request could not be completed | Check the saved resource before retrying a write; contact support if it repeats. |
+
+The API rate limit is **1,000 requests per minute**.
+
+Authentication errors use a `message` field:
+
+```json
+{"message":"Unauthenticated."}
+```
+
+A missing location or lead uses an `error` field:
+
+```json
+{"error":"Resource not found."}
+```
+
+A location write without its required name returns `422`:
+
+```json
+{
+  "message": "The name field is required.",
+  "errors": {
+    "name": ["The name field is required."]
+  }
+}
+```
+
+V1 retains its existing error shapes. The [V2 error reference](/api/errors) describes the V2 contract.

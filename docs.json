@@ -57,7 +57,9 @@
       {
         "group": "Existing integrations",
         "pages": [
-          "api/legacy"
+          "api/legacy",
+          "api/legacy-locations",
+          "api/legacy-leads"
         ]
       }
     ]
@@ -65,7 +67,7 @@
   "footer": {
     "socials": {
       "x": "https://x.com/storerocket",
-      "github": "https://github.com/storerocket"
+      "github": "https://github.com/adriansio/docs"
     }
   },
   "api": {

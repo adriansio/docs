@@ -1,10 +1,10 @@
 ---
 title: 'Update selected fields'
-description: 'PATCH preserves everything you leave out and supports explicit clearing.'
+description: 'Change selected fields and clear values without resending the location.'
 api: 'PATCH /api/v2/projects/{project_id}/locations/{location_id}'
 ---
 
-Requires `location:update` and project API access. Send a JSON object containing only the fields you want to change. Omitted fields and attachments keep their saved values.
+Requires `location:update` and project API access. Send a JSON object containing only the fields you want to change. Omitted inputs and attachments keep their saved values; generated addresses can refresh when address components change, as described below.
 Returns `200` and the [updated location](/api/locations/get#response-format).
 
 <ParamField path="project_id" type="string" required>The public project ID.</ParamField>
@@ -80,7 +80,9 @@ Send null to clear nullable text fields, including phone, email, website, and so
 
 Use [public field names](/api/locations/create#additional-fields). Internal fields such as `project_id` and `location_type_id` are ignored. `socials` is a response field; send the individual profile fields.
 
-Addresses and slugs retain their generation behavior: clearing a generated address can regenerate it from saved components, and clearing a slug can generate one from the location. PATCH touching address/coordinate fields queues geocoding only if a coordinate is missing. Other PATCH requests do not trigger geocoding. The immediate response may precede a queued geocode result.
+Changing address components refreshes an automatically generated `address` or `display_address`. A custom combined address is preserved when omitted. Send `"address": null` to regenerate it from saved components; clearing a slug can generate one from the location.
+
+PATCH touching address/coordinate fields queues geocoding only if a coordinate is missing. Other PATCH requests do not trigger geocoding. The immediate response may precede a queued geocode result.
 
 ## Atomic validation
 
