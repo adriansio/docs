@@ -1,0 +1,33 @@
+/* Keep short request examples close to the explanation on inline layouts. */
+@media (max-width: 1279px) {
+  #api-playground-2-operation-page [class~="min-h-[18rem]"] {
+    min-height: 0;
+    max-height: none;
+  }
+}
+
+/* Keep the header layout and give copy controls a full touch target. */
+@media (max-width: 1023px) {
+  #search-bar-entry-mobile {
+    position: relative;
+  }
+
+  #search-bar-entry-mobile::after {
+    content: "";
+    position: absolute;
+    inset: -6px;
+  }
+
+  [data-testid="copy-code-button"] {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  [data-testid="copy-code-button"] + [class~="absolute"] {
+    pointer-events: none;
+  }
+
+  #api-playground-2-operation-page button[aria-label="Copy"] {
+    opacity: 1;
+  }
+}

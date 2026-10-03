@@ -1,0 +1,219 @@
+---
+title: 'V1 locations'
+description: 'Read and manage locations through the supported legacy endpoints.'
+---
+
+These endpoints use [V1 authentication and project scope](/api/legacy). Replace `YOUR_LEGACY_TOKEN` with the token from your existing V1 integration.
+
+| Method | Endpoint | Success |
+| --- | --- | --- |
+| GET | `/api/locations` | `200`, paginated locations |
+| GET | `/api/locations/{id}` | `200`, one location |
+| POST | `/api/locations` | `201`, created location |
+| PUT | `/api/locations/{id}` | `200`, updated location |
+| DELETE | `/api/locations/{id}` | `200`, `success: true` |
+
+V1 has no PATCH location endpoint. For partial updates with explicit clearing of hours and other attached information, see [V2 PATCH](/api/locations/update).
+
+## List locations
+
+```bash
+curl --get 'https://storerocket.io/api/locations' \
+  -H 'Authorization: Bearer YOUR_LEGACY_TOKEN' \
+  -H 'Accept: application/json' \
+  --data-urlencode 'page=1' \
+  --data-urlencode 'limit=25'
+```
+
+| Parameter | Default | Accepted values |
+| --- | --- | --- |
+| `page` | `1` | Page number |
+| `limit` | `15` | Page size from `1` to `100`; values above `100` use `15` |
+
+The response contains a `data` array, pagination `links`, and pagination `meta`. Each item in `data` uses the [location format](#location-response). V1 includes opening hours, filters, custom fields, and buttons automatically; it does not use V2 include flags or V2 list filters.
+
+Use the next page number with the same `limit`. Pagination links may omit your custom `limit`, so preserve it in each request.
+
+This abbreviated example shows an empty result:
+
+```json
+{
+  "data": [],
+  "links": {
+    "first": "https://storerocket.io/api/locations?page=1",
+    "last": "https://storerocket.io/api/locations?page=1",
+    "prev": null,
+    "next": null,
+    "self": "https://storerocket.io/api/locations"
+  },
+  "meta": {
+    "current_page": 1,
+    "from": null,
+    "last_page": 1,
+    "path": "https://storerocket.io/api/locations",
+    "per_page": 25,
+    "to": null,
+    "total": 0
+  }
+}
+```
+
+## Get a location
+
+Use the numeric `id` returned by V1. `12345` below is an example ID.
+
+```bash
+curl 'https://storerocket.io/api/locations/12345' \
+  -H 'Authorization: Bearer YOUR_LEGACY_TOKEN' \
+  -H 'Accept: application/json'
+```
+
+Returns `200` and the location object directly, **without a `data` wrapper**. An ID outside the token owner's personal project returns `404`.
+
+## Create a location
+
+`name` is required. Supply an address and coordinates that describe the location.
+
+```bash
+curl -X POST 'https://storerocket.io/api/locations' \
+  -H 'Authorization: Bearer YOUR_LEGACY_TOKEN' \
+  -H 'Accept: application/json' \
+  -H 'Content-Type: application/json' \
+  --data '{
+    "name": "Downtown Store",
+    "address_line_1": "123 Main St",
+    "city": "Seattle",
+    "state": "WA",
+    "postcode": "98101",
+    "country": "US",
+    "lat": 47.6062,
+    "lng": -122.3321,
+    "visible": true
+  }'
+```
+
+Returns `201` with the created [location object](#location-response), without a `data` wrapper.
+
+When either coordinate is missing or zero, V1 creation attempts geocoding during the request. Supplying both nonzero coordinates avoids that lookup.
+
+## Update a location
+
+PUT requires `name`, even when you are changing only its phone number.
+
+```bash
+curl -X PUT 'https://storerocket.io/api/locations/12345' \
+  -H 'Authorization: Bearer YOUR_LEGACY_TOKEN' \
+  -H 'Accept: application/json' \
+  -H 'Content-Type: application/json' \
+  --data '{
+    "name": "Downtown Store",
+    "phone": "555-0101",
+    "location_type": "Standard"
+  }'
+```
+
+Use the location's current name and location-type name. The `Standard` value above is illustrative; use a type configured in your project.
+
+Returns `200` with the updated location object, without a `data` wrapper.
+
+Omitted basic fields keep their saved values. **`location_type` is an exception:** omitting it, setting it to null, or sending an unmatched name selects the project default. Include its current name to preserve a nondefault type.
+
+Send `null` to clear an optional contact or social field, such as `phone`, `email`, or `twitter`. An empty string is treated as null. Clearing `address` or `display_address` regenerates it from the available address information.
+
+Updating address components also refreshes an address previously generated from those components. A separately supplied custom address stays in place unless you explicitly replace or clear it.
+
+When either coordinate is missing or zero after an update, V1 queues geocoding. Changing an address alone does not replace existing nonzero coordinates; provide the new coordinates when moving a location.
+
+## Writable fields
+
+POST and PUT accept these fields:
+
+| Field | Input |
+| --- | --- |
+| `name` | Required, nonempty location name |
+| `address` | Full address; generated from components when empty |
+| `display_address` | Address shown to visitors; falls back to `address` when empty |
+| `address_line_1`, `address_line_2` | Street address components |
+| `city`, `state`, `postcode`, `country` | Address components; optional in V1 |
+| `phone`, `email`, `url` | Contact details |
+| `lat` | Number from `-90` to `90`, or null |
+| `lng` | Number from `-180` to `180`, or null |
+| `visible` | Boolean `true` or `false` |
+| `location_type` | Existing location-type name; otherwise the project default |
+| `facebook`, `instagram`, `twitter`, `yelp` | Profile handle or profile URL |
+| `youtube`, `tiktok` | Profile handle or profile URL |
+
+Use the public key `twitter`, rather than `x_twitter`, and `yelp`, rather than `yelp_id`.
+
+<Note>
+  `filters`, `fields`, `buttons`, `hours`, `marker`, `cover`, and `slug` are not writable through the current V1 POST and PUT endpoints. Sending them does not update those values.
+
+  They can still appear in read responses. To manage attached location information, use the dashboard or the documented [V2 location endpoints](/api/locations/create).
+</Note>
+
+## Delete a location
+
+```bash
+curl -X DELETE 'https://storerocket.io/api/locations/12345' \
+  -H 'Authorization: Bearer YOUR_LEGACY_TOKEN' \
+  -H 'Accept: application/json'
+```
+
+Deletes the location and returns `200`:
+
+```json
+{"success":true}
+```
+
+## Location response
+
+GET one, POST, and PUT return the location directly. In a list response, each `data` item has the same format. This example shows selected fields:
+
+```json
+{
+  "id": "12345",
+  "slug": "downtown-store-seattle-wa",
+  "name": "Downtown Store",
+  "address": "123 Main St, Seattle, WA, 98101, US",
+  "display_address": "123 Main St, Seattle, WA, 98101, US",
+  "address_line_1": "123 Main St",
+  "address_line_2": null,
+  "city": "Seattle",
+  "state": "WA",
+  "postcode": "98101",
+  "country": "US",
+  "phone": "555-0101",
+  "email": null,
+  "url": "https://example.com",
+  "lat": 47.6062,
+  "lng": -122.3321,
+  "visible": true,
+  "facebook": null,
+  "instagram": null,
+  "twitter": null,
+  "socials": [],
+  "marker": null,
+  "location_type": {
+    "id": "12",
+    "name": "Standard",
+    "priority": "1",
+    "default": true,
+    "label": false
+  },
+  "cover_image": null,
+  "hours": null,
+  "fields": [],
+  "filters": [],
+  "buttons": []
+}
+```
+
+- `id` is a numeric ID encoded as a string. Coordinates are numbers or null; `visible` is a boolean.
+- `location_type` is an object or null, rather than the name-only V2 response.
+- `hours` is null or an object with `name`, `location_id`, and `mon` through `sun`.
+- `fields` is an array of `{id, name, value}` objects; `filters` is an array of `{id, name}` objects.
+- `buttons` is an array of `{id, title, value}` objects. V1 uses `buttons`, not V2's `callsToAction` response key.
+- `cover_image` is null or an object with `url` and `name`. V1 does not use V2's `cover_image_url` key.
+- `socials` contains the configured profiles as `{key, label, handle, url, icon}` objects.
+
+V1 locations do not include `created_at` or `updated_at`. See [V1 errors](/api/legacy#errors-and-rate-limits) for failed requests.

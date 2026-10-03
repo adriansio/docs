@@ -1,0 +1,109 @@
+---
+title: 'V1 leads'
+description: 'Read and delete leads captured by your StoreRocket locator.'
+---
+
+These endpoints use [V1 authentication and project scope](/api/legacy). Use the legacy token from your existing integration, not a newly created V2 token.
+
+V1 provides **three lead endpoints**. There is no authenticated REST endpoint for creating or updating a lead, and V2 currently has no lead endpoints.
+
+| Method | Endpoint | Success |
+| --- | --- | --- |
+| GET | `/api/leads` | `200`, paginated leads |
+| GET | `/api/leads/{id}` | `200`, one lead |
+| DELETE | `/api/leads/{id}` | `200`, `success: true` |
+
+## List leads
+
+```bash
+curl --get 'https://storerocket.io/api/leads' \
+  -H 'Authorization: Bearer YOUR_LEGACY_TOKEN' \
+  -H 'Accept: application/json' \
+  --data-urlencode 'page=1'
+```
+
+Results are paginated at **15 leads per page**. Use the `page` query parameter, or follow `links.next` until it is null. This endpoint does not support a custom `limit` or location-style list filters.
+
+The response contains a `data` array, pagination `links`, and pagination `meta`. Each item uses the [lead format](#lead-response).
+
+This abbreviated example shows an empty result:
+
+```json
+{
+  "data": [],
+  "links": {
+    "first": "https://storerocket.io/api/leads?page=1",
+    "last": "https://storerocket.io/api/leads?page=1",
+    "prev": null,
+    "next": null
+  },
+  "meta": {
+    "current_page": 1,
+    "from": null,
+    "last_page": 1,
+    "path": "https://storerocket.io/api/leads",
+    "per_page": 15,
+    "to": null,
+    "total": 0
+  }
+}
+```
+
+## Get a lead
+
+Use the numeric `id` returned by the V1 list response. `67890` below is an example ID.
+
+```bash
+curl 'https://storerocket.io/api/leads/67890' \
+  -H 'Authorization: Bearer YOUR_LEGACY_TOKEN' \
+  -H 'Accept: application/json'
+```
+
+Returns `200` with the lead object directly, **without a `data` wrapper**. A lead outside the token owner's personal project returns `404`.
+
+## Delete a lead
+
+```bash
+curl -X DELETE 'https://storerocket.io/api/leads/67890' \
+  -H 'Authorization: Bearer YOUR_LEGACY_TOKEN' \
+  -H 'Accept: application/json'
+```
+
+Deletes the lead and returns `200`:
+
+```json
+{"success":true}
+```
+
+## Lead response
+
+A lead returned by GET has these fields. Values below are illustrative, and visitor details may be null.
+
+```json
+{
+  "id": "67890",
+  "email": "visitor@example.com",
+  "query": "Seattle",
+  "lat": null,
+  "lng": null,
+  "created_at": "2026-01-01T12:00:00.000000Z",
+  "name": "Sam",
+  "phone": null,
+  "comment": "Please tell me when a store opens nearby.",
+  "url": "https://example.com/store-locator"
+}
+```
+
+| Field | Meaning |
+| --- | --- |
+| `id` | Numeric lead ID encoded as a string |
+| `email`, `name`, `phone` | Visitor contact details |
+| `query` | Search query captured with the lead |
+| `lat`, `lng` | Coordinates captured with the lead, when available |
+| `created_at` | Creation timestamp |
+| `comment` | Visitor's comment |
+| `url` | Page URL captured with the lead |
+
+In a list response, this object appears inside `data`. It does not include a status, assigned location, or an `updated_at` field.
+
+See [V1 errors and rate limits](/api/legacy#errors-and-rate-limits) for failed requests.
