@@ -1,123 +1,49 @@
 ---
-title: 'List Locations'
-description: 'Retrieve all locations for a project'
+title: 'List locations'
+description: 'Read a paginated list with supported filters and optional relationships.'
 api: 'GET /api/v2/projects/{project_id}/locations'
 ---
 
-Returns a paginated list of locations.
+Requires `location:read` and project API access. Returns a `data` array with pagination `links` and `meta`.
 
-## Request
+<ParamField path="project_id" type="string" required>The public project ID returned by [List projects](/api/projects).</ParamField>
+<ParamField query="page" type="integer" default="1">Page to retrieve.</ParamField>
+<ParamField query="limit" type="integer" default="15">Page size. Use 1 to 100; larger values use the default size.</ParamField>
+<ParamField query="includeHours" type="integer">Send `1` to include the hours object, or null if there is no schedule.</ParamField>
+<ParamField query="includeFilters" type="integer">Send `1` to include the filters array.</ParamField>
+<ParamField query="includeFields" type="integer">Send `1` to include the custom-fields array.</ParamField>
+<ParamField query="includeCallsToAction" type="integer">Send `1` to include the calls-to-action array.</ParamField>
 
+Omit an include flag or use `0` to leave that relationship out. Use numeric `1`/`0`, rather than the string `false`.
+
+<RequestExample>
 ```bash
-curl -X GET "https://api.storerocket.io/api/v2/projects/{project_id}/locations" \
-  -H "X-API-Key: your_api_key"
+curl --get 'https://storerocket.io/api/v2/projects/PROJECT_ID/locations' \
+  -H 'Authorization: Bearer YOUR_TOKEN' \
+  -H 'Accept: application/json' \
+  --data-urlencode 'limit=25' \
+  --data-urlencode 'city[eq]=Seattle' \
+  --data-urlencode 'includeHours=1'
 ```
+</RequestExample>
 
-## Path Parameters
+## Supported filters
 
-<ParamField path="project_id" type="string" required>
-  Your project's hashid.
-</ParamField>
+| Field | Operators |
+| --- | --- |
+| `name` | `eq`, `ne`, `like` |
+| `address` | `eq`, `like` |
+| `city` | `eq`, `like` |
+| `state` | `eq`, `like` |
+| `country` | `eq`, `like` |
+| `postalCode` | `eq` |
 
-## Query Parameters
-
-<ParamField query="limit" type="integer" default="15">
-  Results per page (max 100).
-</ParamField>
-
-<ParamField query="page" type="integer" default="1">
-  Page number.
-</ParamField>
-
-<ParamField query="includeFilters" type="boolean" default="false">
-  Include filter associations.
-</ParamField>
-
-<ParamField query="includeFields" type="boolean" default="false">
-  Include custom field values.
-</ParamField>
-
-<ParamField query="includeHours" type="boolean" default="false">
-  Include business hours.
-</ParamField>
-
-<ParamField query="includeCallsToAction" type="boolean" default="false">
-  Include CTA button values.
-</ParamField>
-
-### Filtering
-
-Filter locations by field values:
-
-| Parameter | Description | Example |
-|-----------|-------------|---------|
-| `city` | Filter by city | `?city=Seattle` |
-| `state` | Filter by state | `?state=WA` |
-| `country` | Filter by country | `?country=US` |
-| `postcode` | Filter by postal code | `?postcode=98101` |
-| `visible` | Filter by visibility | `?visible=true` |
+Use bracket notation, such as `city[eq]=Seattle` or `name[like]=Downtown`. `like` matches a substring. Supplied filters are combined.
+The query field is `postalCode`, although the location response uses `postcode`. Plain `city=Seattle`, `postcode=98101`, and `visible` are not supported list filters.
+Use `--data-urlencode` in curl for bracketed parameters.
 
 ## Response
 
-```json
-{
-  "data": [
-    {
-      "id": "abc123",
-      "name": "Downtown Seattle",
-      "address": "123 Main St, Seattle, WA 98101",
-      "address_line_1": "123 Main St",
-      "address_line_2": null,
-      "city": "Seattle",
-      "state": "WA",
-      "postcode": "98101",
-      "country": "US",
-      "lat": 47.6062,
-      "lng": -122.3321,
-      "phone": "(206) 555-1234",
-      "email": "seattle@example.com",
-      "url": "https://example.com/seattle",
-      "visible": true,
-      "slug": "downtown-seattle",
-      "created_at": "2024-01-15T10:30:00Z",
-      "updated_at": "2024-01-20T14:45:00Z"
-    }
-  ],
-  "meta": {
-    "current_page": 1,
-    "last_page": 5,
-    "per_page": 15,
-    "total": 73
-  },
-  "links": {
-    "first": "https://api.storerocket.io/api/v2/projects/xyz/locations?page=1",
-    "last": "https://api.storerocket.io/api/v2/projects/xyz/locations?page=5",
-    "prev": null,
-    "next": "https://api.storerocket.io/api/v2/projects/xyz/locations?page=2"
-  }
-}
-```
+Each element of `data` uses the [location response format](/api/locations/get#response-format). Follow `links.next` until it is null, or use `meta.current_page` and `meta.last_page`.
 
-## Examples
-
-### Get all locations with filters and hours
-
-```bash
-curl -X GET "https://api.storerocket.io/api/v2/projects/{project_id}/locations?includeFilters=true&includeHours=true&limit=50" \
-  -H "X-API-Key: your_api_key"
-```
-
-### Filter by city
-
-```bash
-curl -X GET "https://api.storerocket.io/api/v2/projects/{project_id}/locations?city=Seattle" \
-  -H "X-API-Key: your_api_key"
-```
-
-### Pagination
-
-```bash
-# Get page 2 with 25 results per page
-curl -X GET "https://api.storerocket.io/api/v2/projects/{project_id}/locations?page=2&limit=25" \
-  -H "X-API-Key: your_api_key"
-```
+Errors: `401` authentication, `403` access/permission, `404` inaccessible project, `429` rate limit. See [errors](/api/errors).

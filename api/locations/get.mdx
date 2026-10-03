@@ -1,139 +1,72 @@
 ---
-title: 'Get Location'
-description: 'Retrieve a single location'
+title: 'Get a location'
+description: 'Read one location and its optional attached information.'
 api: 'GET /api/v2/projects/{project_id}/locations/{location_id}'
 ---
 
-Returns details for a specific location.
+Requires `location:read` and project API access. The location must belong to the project in the URL.
 
-## Request
+<ParamField path="project_id" type="string" required>The public project ID.</ParamField>
+<ParamField path="location_id" type="string" required>The public location ID.</ParamField>
+<ParamField query="includeHours" type="integer">Send `1` to include opening hours.</ParamField>
+<ParamField query="includeFilters" type="integer">Send `1` to include filters.</ParamField>
+<ParamField query="includeFields" type="integer">Send `1` to include custom fields.</ParamField>
+<ParamField query="includeCallsToAction" type="integer">Send `1` to include calls to action.</ParamField>
 
+<RequestExample>
 ```bash
-curl -X GET "https://api.storerocket.io/api/v2/projects/{project_id}/locations/{location_id}" \
-  -H "X-API-Key: your_api_key"
+curl --get 'https://storerocket.io/api/v2/projects/PROJECT_ID/locations/LOCATION_ID' \
+  -H 'Authorization: Bearer YOUR_TOKEN' \
+  -H 'Accept: application/json' \
+  --data-urlencode 'includeHours=1' \
+  --data-urlencode 'includeFilters=1' \
+  --data-urlencode 'includeFields=1' \
+  --data-urlencode 'includeCallsToAction=1'
 ```
+</RequestExample>
 
-## Path Parameters
+## Response format
 
-<ParamField path="project_id" type="string" required>
-  Your project's hashid.
-</ParamField>
+Successful reads and writes return `200` with a `data` object. The example below shows selected fields with illustrative values.
 
-<ParamField path="location_id" type="string" required>
-  The location's hashid.
-</ParamField>
-
-## Query Parameters
-
-<ParamField query="includeFilters" type="boolean" default="false">
-  Include filter associations.
-</ParamField>
-
-<ParamField query="includeFields" type="boolean" default="false">
-  Include custom field values.
-</ParamField>
-
-<ParamField query="includeHours" type="boolean" default="false">
-  Include business hours.
-</ParamField>
-
-<ParamField query="includeCallsToAction" type="boolean" default="false">
-  Include CTA button values.
-</ParamField>
-
-## Response
-
+<ResponseExample>
 ```json
 {
   "data": {
-    "id": "abc123",
-    "name": "Downtown Seattle",
+    "id": "LOCATION_ID",
+    "name": "Downtown Store",
     "address": "123 Main St, Seattle, WA 98101",
-    "address_line_1": "123 Main St",
-    "address_line_2": "Suite 500",
     "city": "Seattle",
-    "state": "WA",
     "postcode": "98101",
-    "country": "US",
+    "phone": "555-0101",
     "lat": 47.6062,
     "lng": -122.3321,
-    "phone": "(206) 555-1234",
-    "email": "seattle@example.com",
-    "url": "https://example.com/seattle",
-    "facebook": "https://facebook.com/example",
-    "instagram": "https://instagram.com/example",
-    "twitter": "https://twitter.com/example",
-    "visible": true,
-    "slug": "downtown-seattle",
-    "image_url": "https://example.com/store.jpg",
-    "location_type": {
-      "id": "type123",
-      "name": "Flagship Store"
-    },
-    "marker": {
-      "id": "marker123",
-      "name": "Default"
-    },
-    "created_at": "2024-01-15T10:30:00Z",
-    "updated_at": "2024-01-20T14:45:00Z"
-  }
-}
-```
-
-### With Hours
-
-```json
-{
-  "data": {
-    "id": "abc123",
-    "name": "Downtown Seattle",
+    "marker_id": null,
+    "marker_url": null,
+    "location_type": "Standard",
+    "cover_image_url": null,
     "hours": {
-      "monday": { "open": "09:00", "close": "18:00", "closed": false },
-      "tuesday": { "open": "09:00", "close": "18:00", "closed": false },
-      "wednesday": { "open": "09:00", "close": "18:00", "closed": false },
-      "thursday": { "open": "09:00", "close": "18:00", "closed": false },
-      "friday": { "open": "09:00", "close": "21:00", "closed": false },
-      "saturday": { "open": "10:00", "close": "17:00", "closed": false },
-      "sunday": { "open": null, "close": null, "closed": true }
-    }
+      "name": "Store hours",
+      "mon": "09:00-17:00",
+      "tue": "09:00-17:00",
+      "wed": "09:00-17:00",
+      "thu": "09:00-17:00",
+      "fri": "09:00-17:00",
+      "sat": "10:00-14:00",
+      "sun": "closed"
+    },
+    "filters": [],
+    "fields": [{"id":"FIELD_ID","name":"Manager","value":"Sam"}],
+    "callsToAction": [{"id":"CTA_ID","title":"Book","value":"https://example.com/book"}]
   }
 }
 ```
+</ResponseExample>
 
-### With Filters
+The full resource also includes `slug`, `visible`, `display_address`, address components, `timezone`, `email`, `url`, and social fields. `location_type` is a name or null; marker IDs are integers or null. Read `cover_image_url` for the cover, and send `cover` when writing it.
 
-```json
-{
-  "data": {
-    "id": "abc123",
-    "name": "Downtown Seattle",
-    "filters": [
-      { "id": "f1", "name": "Drive-Through", "slug": "drive-through" },
-      { "id": "f2", "name": "Wheelchair Accessible", "slug": "wheelchair-accessible" }
-    ]
-  }
-}
-```
+`hours`, `filters`, `fields`, and `callsToAction` are included on GET only when requested with their include flags. No schedule returns `hours: null`. A write response includes these relationships automatically.
 
-### With Custom Fields
+Custom fields and calls to action are **arrays in responses**, even though writes use named objects. Location responses do not include `created_at` or `updated_at`.
 
-```json
-{
-  "data": {
-    "id": "abc123",
-    "name": "Downtown Seattle",
-    "fields": {
-      "manager_name": "John Smith",
-      "parking_spaces": "50",
-      "accepts_returns": "true"
-    }
-  }
-}
-```
-
-## Errors
-
-| Status | Description |
-|--------|-------------|
-| `404` | Location not found |
-| `401` | Invalid API key |
+Errors: `401` authentication, `403` access/permission, `404` inaccessible project or location, `429` rate limit. See [errors](/api/errors).

@@ -1,0 +1,33 @@
+---
+title: 'List projects'
+description: 'Find the public project IDs available to your account.'
+api: 'GET /api/v2/projects'
+---
+
+Returns projects that the authenticated user belongs to. Use the returned `id` in location URLs.
+
+<RequestExample>
+```bash
+curl 'https://storerocket.io/api/v2/projects' \
+  -H 'Authorization: Bearer YOUR_TOKEN' \
+  -H 'Accept: application/json'
+```
+</RequestExample>
+
+<ResponseExample>
+```json
+{
+  "data": [
+    {
+      "id": "PROJECT_ID",
+      "name": "My Project",
+      "locations": 12,
+      "status": "active",
+      "plan": "Business"
+    }
+  ]
+}
+```
+</ResponseExample>
+
+A successful request returns `200`. An invalid token returns `401`. Location operations additionally check API access for the selected project.

@@ -1,0 +1,242 @@
+{
+  "info": {
+    "name": "StoreRocket current V2 API",
+    "description": "Current production V2 API: Bearer authentication, full POST/PUT compatibility, and partial PATCH updates. See the API reference for omission and explicit clearing. Set token, project_id and location_id. No real credentials or customer IDs are included.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://storerocket.io/api/v2"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "project_id",
+      "value": ""
+    },
+    {
+      "key": "location_id",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Get user",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/user",
+        "description": "Current V2 reference. Requests use your token and project IDs. Write requests change your selected location; see the corresponding reference page."
+      }
+    },
+    {
+      "name": "List projects",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/projects",
+        "description": "Current V2 reference. Requests use your token and project IDs. Write requests change your selected location; see the corresponding reference page."
+      }
+    },
+    {
+      "name": "List locations",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/projects/{{project_id}}/locations?includeHours=1&includeFields=1",
+        "description": "Current V2 reference. Requests use your token and project IDs. Write requests change your selected location; see the corresponding reference page."
+      }
+    },
+    {
+      "name": "Get location",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/projects/{{project_id}}/locations/{{location_id}}?includeHours=1",
+        "description": "Current V2 reference. Requests use your token and project IDs. Write requests change your selected location; see the corresponding reference page."
+      }
+    },
+    {
+      "name": "Create coming-soon location",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/projects/{{project_id}}/locations",
+        "description": "Current V2 reference. Requests use your token and project IDs. Write requests change your selected location; see the corresponding reference page.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Coming Soon Store\",\n  \"city\": \"Seattle\",\n  \"lat\": 47.6062,\n  \"lng\": -122.3321,\n  \"visible\": false,\n  \"hours\": {}\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Update phone with PATCH",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/projects/{{project_id}}/locations/{{location_id}}",
+        "description": "Current V2 reference. Requests use your token and project IDs. Write requests change your selected location; see the corresponding reference page.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"phone\": \"555-0101\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Update Monday with PATCH",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/projects/{{project_id}}/locations/{{location_id}}",
+        "description": "Current V2 reference. Requests use your token and project IDs. Write requests change your selected location; see the corresponding reference page.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"hours\": {\n    \"mon\": \"09:00-17:00\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Clear schedule with PATCH",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/projects/{{project_id}}/locations/{{location_id}}",
+        "description": "Current V2 reference. Requests use your token and project IDs. Write requests change your selected location; see the corresponding reference page.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"hours\": null\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Update with existing PUT contract",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/projects/{{project_id}}/locations/{{location_id}}",
+        "description": "Current V2 reference. Requests use your token and project IDs. Write requests change your selected location; see the corresponding reference page.",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Downtown Store\",\n  \"city\": \"Seattle\",\n  \"phone\": \"555-0101\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Delete location",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/projects/{{project_id}}/locations/{{location_id}}",
+        "description": "Current V2 reference. Requests use your token and project IDs. Write requests change your selected location; see the corresponding reference page."
+      }
+    }
+  ]
+}
