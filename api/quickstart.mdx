@@ -1,6 +1,6 @@
 ---
 title: 'Quickstart'
-description: 'Make your first authenticated request in cURL, JavaScript or PHP.'
+description: 'Test a read request in your browser, or run cURL, JavaScript or PHP.'
 ---
 
 Get a token, choose a project and read its locations. This quickstart only reads data.
@@ -17,6 +17,19 @@ export STOREROCKET_TOKEN='YOUR_TOKEN'
 ```
 
 Replace `YOUR_TOKEN` with your token. Keep it on your server, in an environment variable or secret manager. Do not include it in public browser JavaScript or your repository. See [authentication](/api/authentication) for permissions and revocation.
+
+## Test in your browser
+
+1. Open [List projects](/api/projects) and click **Try it** beside the endpoint URL.
+2. Paste the token into **Authorization** without the `Bearer` prefix, then click **Send**.
+3. Check for `200 OK` and a `data` array. Copy the `id` of the project you want to use.
+4. Open [List locations](/api/locations/list), click **Try it**, enter the project ID, and click **Send**. Expect `200 OK` with `data`, `links` and `meta`.
+
+The four GET endpoints have browser testing. Requests go directly to StoreRocket and only run when you click **Send**. Their forms read data; they do not change locations.
+
+The result marked with an HTTP status is your request's response. **Example response** shows a fixed illustration; the code tabs are templates you can copy and run separately.
+
+Create, update and delete requests use the runnable cURL, JavaScript and PHP examples. See [test an update](/api/locations/update#test-an-update) for a request and the result to check.
 
 ## 2. Find your project ID
 

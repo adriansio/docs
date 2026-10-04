@@ -2,10 +2,13 @@
 title: 'Update with PUT'
 description: 'The existing update contract, retained for supported integrations.'
 api: 'PUT /api/v2/projects/{project_id}/locations/{location_id}'
+playground: 'simple'
 ---
 
 Requires `location:update` and project API access. `name` and `city` are required on each request; a street address is optional.
 For a change that should preserve all omitted choices, use [PATCH](/api/locations/update).
+
+<Note>Run write requests with the cURL, JavaScript or PHP examples. They change real location data. Use [PATCH](/api/locations/update) for new integrations that update selected fields.</Note>
 
 <ParamField path="project_id" type="string" required>The public project ID.</ParamField>
 <ParamField path="location_id" type="string" required>The public location ID.</ParamField>

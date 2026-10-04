@@ -7,12 +7,12 @@ api: 'GET /api/v2/projects/{project_id}/locations'
 Requires `location:read` and project API access. Returns a `data` array with pagination `links` and `meta`.
 
 <ParamField path="project_id" type="string" required>The public project ID returned by [List projects](/api/projects).</ParamField>
-<ParamField query="page" type="integer" default="1">Page to retrieve.</ParamField>
-<ParamField query="limit" type="integer" default="15">Page size. Use 1 to 100; larger values use the default size.</ParamField>
-<ParamField query="includeHours" type="integer">Send `1` to include the hours object, or null if there is no schedule.</ParamField>
-<ParamField query="includeFilters" type="integer">Send `1` to include the filters array.</ParamField>
-<ParamField query="includeFields" type="integer">Send `1` to include the custom-fields array.</ParamField>
-<ParamField query="includeCallsToAction" type="integer">Send `1` to include the calls-to-action array.</ParamField>
+<ParamField query="page" type="number" default="1">Positive integer page number to retrieve.</ParamField>
+<ParamField query="limit" type="number" default="15">Integer page size from 1 to 100; larger values use the default size.</ParamField>
+<ParamField query="includeHours" type="number">Send `1` to include the hours object, or null if there is no schedule.</ParamField>
+<ParamField query="includeFilters" type="number">Send `1` to include the filters array.</ParamField>
+<ParamField query="includeFields" type="number">Send `1` to include the custom-fields array.</ParamField>
+<ParamField query="includeCallsToAction" type="number">Send `1` to include the calls-to-action array.</ParamField>
 
 Omit an include flag or use `0` to leave that relationship out. Use numeric `1`/`0`, rather than the string `false`.
 
@@ -114,7 +114,7 @@ Each element of `data` uses the [location response format](/api/locations/get#re
 The example below uses `limit=1` with two locations. Location fields and `meta.links` are shortened for readability; the request example above uses `limit=25` and filters.
 
 <ResponseExample>
-```json Paginated response
+```json Example response
 {
   "data": [
     {

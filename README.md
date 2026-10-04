@@ -9,6 +9,10 @@ Read [AGENTS.md](AGENTS.md) before working here. Important StoreRocket changes
 must include the affected documentation and examples in the same release.
 
 - `docs.json` defines the published navigation and native API playground.
+  The four GET pages use direct browser requests (`proxy: false`). Write pages
+  keep `playground: 'simple'` and runnable code examples: do not enable their
+  forms until explicit nulls, empty objects and omitted fields survive a native
+  request test. A visible type picker alone is not proof of correct JSON.
 - `api/` contains the supported V2 reference and separate legacy V1 guides.
 - `api/quickstart.mdx` starts with authenticated read requests; `api/sync-locations.mdx`
   contains complete JavaScript/PHP scripts with preview mode and bounded retries.
@@ -35,7 +39,11 @@ python3 scripts/check-examples.py
 ```
 
 Use the local preview to check desktop and mobile, both themes, links, search,
-and the exact copied code. Parse changed JSON and shell examples without running
+the exact copied code, and the gap above previous/next navigation at every page's
+bottom. Test **Try it** on all four GET pages with fixture interception before
+clicking **Send**; check URL, bearer header, query parameters and displayed HTTP
+status/body. The code tabs are authored templates, separate from the form's
+live response. Parse changed JSON and shell examples without running
 write requests against customer accounts. Examples use placeholder credentials.
 The example checks need Python 3, Node.js 22 or later, and PHP 8.2 or later with
 cURL. They cover request encoding, error exits, pagination, preview mode, explicit

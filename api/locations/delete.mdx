@@ -2,9 +2,12 @@
 title: 'Delete a location'
 description: 'Remove a location from a project.'
 api: 'DELETE /api/v2/projects/{project_id}/locations/{location_id}'
+playground: 'simple'
 ---
 
 Requires `location:delete` and project API access. The location must belong to the project in the URL.
+
+<Warning>This request deletes a real location. Run the cURL, JavaScript or PHP example only with a location you created for testing.</Warning>
 
 <ParamField path="project_id" type="string" required>The public project ID.</ParamField>
 <ParamField path="location_id" type="string" required>The public location ID.</ParamField>
@@ -79,7 +82,7 @@ echo json_encode($data, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR), PHP_EOL;
 </RequestExample>
 
 <ResponseExample>
-```json Response
+```json Example response
 {"success":true}
 ```
 </ResponseExample>
