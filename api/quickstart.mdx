@@ -1,0 +1,200 @@
+---
+title: 'Quickstart'
+description: 'Make your first authenticated request in cURL, JavaScript or PHP.'
+---
+
+Get a token, choose a project and read its locations. This quickstart only reads data.
+JavaScript examples use Node.js 22 or later; PHP examples use PHP 8.2 or later with the cURL extension. No SDK is required.
+
+## 1. Create a token
+
+Open [API Tokens](https://storerocket.io/app/api-tokens), create a token with `location:read`, and copy the token shown. Location endpoints also require API access on the project, available on the Business plan.
+
+Set the token in the terminal where you will run your integration:
+
+```bash Terminal
+export STOREROCKET_TOKEN='YOUR_TOKEN'
+```
+
+Replace `YOUR_TOKEN` with your token. Keep it on your server, in an environment variable or secret manager. Do not include it in public browser JavaScript or your repository. See [authentication](/api/authentication) for permissions and revocation.
+
+## 2. Find your project ID
+
+Choose your language and run the request below. Save JavaScript as `request.mjs` and run `node request.mjs`; save PHP as `request.php` and run `php request.php`. cURL runs directly in your terminal.
+
+<CodeGroup>
+
+```bash cURL
+curl 'https://storerocket.io/api/v2/projects' \
+  -H "Authorization: Bearer $STOREROCKET_TOKEN" \
+  -H 'Accept: application/json'
+```
+
+```javascript JavaScript
+const token = process.env.STOREROCKET_TOKEN;
+if (!token) throw new Error("Set STOREROCKET_TOKEN first.");
+
+const url = new URL(`https://storerocket.io/api/v2/projects`);
+const response = await fetch(url, {
+  headers: {
+    Authorization: `Bearer ${token}`,
+    Accept: "application/json",
+  },
+  signal: AbortSignal.timeout(30_000),
+});
+
+const text = await response.text();
+if (!response.ok) throw new Error(`HTTP ${response.status}: ${text}`);
+console.log(JSON.parse(text));
+```
+
+```php PHP
+<?php
+
+$token = getenv("STOREROCKET_TOKEN") ?: throw new RuntimeException("Set STOREROCKET_TOKEN first.");
+
+$url = 'https://storerocket.io/api/v2/projects';
+
+$curl = curl_init($url);
+curl_setopt_array($curl, [
+    CURLOPT_HTTPHEADER => [
+        "Authorization: Bearer $token",
+        "Accept: application/json",
+    ],
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_CONNECTTIMEOUT => 5,
+    CURLOPT_TIMEOUT => 30,
+]);
+
+$text = curl_exec($curl);
+$error = curl_error($curl);
+$status = (int) curl_getinfo($curl, CURLINFO_HTTP_CODE);
+curl_close($curl);
+
+if ($text === false) {
+    throw new RuntimeException("Request failed: $error");
+}
+if ($status < 200 || $status >= 300) {
+    throw new RuntimeException("HTTP $status: $text");
+}
+$data = json_decode($text, false, 512, JSON_THROW_ON_ERROR);
+echo json_encode($data, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR), PHP_EOL;
+```
+
+</CodeGroup>
+
+A successful request returns `200` with a `data` array. Choose the project you intend to manage; do not assume the first one is correct.
+
+```json Example response
+{
+  "data": [
+    {
+      "id": "PROJECT_ID",
+      "name": "My Project",
+      "locations": 12,
+      "status": "active",
+      "plan": "Business"
+    }
+  ]
+}
+```
+
+Use the returned public `id`, kept as a string. Set it in the same terminal:
+
+```bash Terminal
+export STOREROCKET_PROJECT_ID='PROJECT_ID'
+```
+
+## 3. Read locations
+
+<CodeGroup>
+
+```bash cURL
+curl --get "https://storerocket.io/api/v2/projects/$STOREROCKET_PROJECT_ID/locations" \
+  -H "Authorization: Bearer $STOREROCKET_TOKEN" \
+  -H 'Accept: application/json' \
+  --data-urlencode 'limit=25' \
+  --data-urlencode 'includeHours=1'
+```
+
+```javascript JavaScript
+const token = process.env.STOREROCKET_TOKEN;
+if (!token) throw new Error("Set STOREROCKET_TOKEN first.");
+const projectId = process.env.STOREROCKET_PROJECT_ID;
+if (!projectId) throw new Error("Set STOREROCKET_PROJECT_ID first.");
+
+const url = new URL(`https://storerocket.io/api/v2/projects/${encodeURIComponent(projectId)}/locations`);
+url.searchParams.set("limit", "25");
+url.searchParams.set("includeHours", "1");
+const response = await fetch(url, {
+  headers: {
+    Authorization: `Bearer ${token}`,
+    Accept: "application/json",
+  },
+  signal: AbortSignal.timeout(30_000),
+});
+
+const text = await response.text();
+if (!response.ok) throw new Error(`HTTP ${response.status}: ${text}`);
+console.log(JSON.parse(text));
+```
+
+```php PHP
+<?php
+
+$token = getenv("STOREROCKET_TOKEN") ?: throw new RuntimeException("Set STOREROCKET_TOKEN first.");
+$projectId = getenv("STOREROCKET_PROJECT_ID") ?: throw new RuntimeException("Set STOREROCKET_PROJECT_ID first.");
+
+$url = 'https://storerocket.io/api/v2/projects/' . rawurlencode($projectId) . '/locations';
+$url .= "?" . http_build_query([
+    'limit' => 25,
+    'includeHours' => 1,
+], "", "&", PHP_QUERY_RFC3986);
+
+$curl = curl_init($url);
+curl_setopt_array($curl, [
+    CURLOPT_HTTPHEADER => [
+        "Authorization: Bearer $token",
+        "Accept: application/json",
+    ],
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_CONNECTTIMEOUT => 5,
+    CURLOPT_TIMEOUT => 30,
+]);
+
+$text = curl_exec($curl);
+$error = curl_error($curl);
+$status = (int) curl_getinfo($curl, CURLINFO_HTTP_CODE);
+curl_close($curl);
+
+if ($text === false) {
+    throw new RuntimeException("Request failed: $error");
+}
+if ($status < 200 || $status >= 300) {
+    throw new RuntimeException("HTTP $status: $text");
+}
+$data = json_decode($text, false, 512, JSON_THROW_ON_ERROR);
+echo json_encode($data, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR), PHP_EOL;
+```
+
+</CodeGroup>
+
+The result contains `data`, `links` and `meta`. `data` is an array, including when there is one location. A project with no locations returns an empty array. This request reads the first page; use the [pagination guide](/api/sync-locations#read-every-page) to read every page.
+
+## If your request fails
+
+| Status | What to check |
+| --- | --- |
+| `401` | The token is set and sent as `Authorization: Bearer` |
+| `403` | The token has `location:read` and this project has API access |
+| `404` | The public project ID is correct and belongs to your user account |
+| `429` | Wait for the `Retry-After` interval |
+
+The [error reference](/api/errors) explains field validation and safe retries. JavaScript and PHP examples report the HTTP status and error body instead of treating an API error as success.
+
+## Build your integration
+
+<CardGroup cols={2}>
+  <Card title="Sync location updates" icon="arrows-rotate" href="/api/sync-locations">Read every page, preview changes and apply them with PATCH.</Card>
+  <Card title="API reference" icon="book-open" href="/api/introduction">Find methods, field names, filters and response formats.</Card>
+</CardGroup>

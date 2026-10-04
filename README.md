@@ -10,6 +10,10 @@ must include the affected documentation and examples in the same release.
 
 - `docs.json` defines the published navigation and native API playground.
 - `api/` contains the supported V2 reference and separate legacy V1 guides.
+- `api/quickstart.mdx` starts with authenticated read requests; `api/sync-locations.mdx`
+  contains complete JavaScript/PHP scripts with preview mode and bounded retries.
+- `scripts/check-examples.py` extracts published examples and checks their syntax
+  and behavior against local HTTP fixtures, without calling the production API.
 - `files/storerocket-v2.postman_collection.json` is an optional Postman client
   collection. Postman is being retired as the documentation host.
 - `custom.css` contains the bounded native-layout adjustments.
@@ -27,11 +31,15 @@ With the Mintlify CLI available, run these commands from this repository:
 mint dev --no-open
 mint validate
 mint broken-links
+python3 scripts/check-examples.py
 ```
 
 Use the local preview to check desktop and mobile, both themes, links, search,
 and the exact copied code. Parse changed JSON and shell examples without running
 write requests against customer accounts. Examples use placeholder credentials.
+The example checks need Python 3, Node.js 22 or later, and PHP 8.2 or later with
+cURL. They cover request encoding, error exits, pagination, preview mode, explicit
+clearing and retry boundaries. No test database or SDK is required.
 
 On Adriano's Mac, the configured trusted HTTPS preview is
 [https://sr-api-docs.test](https://sr-api-docs.test).

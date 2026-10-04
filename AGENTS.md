@@ -19,9 +19,9 @@ agent working on this documentation repository.
   remains supported; examples contain placeholders, never real credentials or data.
 - Use the official StoreRocket logo unchanged, normal light/dark switching and
   native Mintlify components. Check desktop and mobile in both themes.
-- Run mint validate and mint broken-links, parse changed JSON/shell examples,
-  and check the actual rendered and copied result. Never run write examples
-  against a real customer account.
+- Run mint validate, mint broken-links and python3 scripts/check-examples.py.
+  Check the actual rendered and copied result. The example checker uses only
+  local HTTP fixtures; never run write examples against a real customer account.
 - Never push directly to main or merge a PR. Adriano merges; main publishes
   automatically. Verify deployed pages after the merge.
 
