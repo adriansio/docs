@@ -13,8 +13,11 @@ Requires `location:read` and project API access. The location must belong to the
 <ParamField query="includeFields" type="integer">Send `1` to include custom fields.</ParamField>
 <ParamField query="includeCallsToAction" type="integer">Send `1` to include calls to action.</ParamField>
 
+JavaScript examples run in Node.js 22 or later; PHP examples require PHP 8.2 or later with cURL. Both read `STOREROCKET_TOKEN` from your environment. See the [quickstart](/api/quickstart) for setup.
+
 <RequestExample>
-```bash
+
+```bash cURL
 curl --get 'https://storerocket.io/api/v2/projects/PROJECT_ID/locations/LOCATION_ID' \
   -H 'Authorization: Bearer YOUR_TOKEN' \
   -H 'Accept: application/json' \
@@ -23,6 +26,72 @@ curl --get 'https://storerocket.io/api/v2/projects/PROJECT_ID/locations/LOCATION
   --data-urlencode 'includeFields=1' \
   --data-urlencode 'includeCallsToAction=1'
 ```
+
+```javascript JavaScript
+const token = process.env.STOREROCKET_TOKEN;
+if (!token) throw new Error("Set STOREROCKET_TOKEN first.");
+const projectId = "PROJECT_ID";
+const locationId = "LOCATION_ID";
+
+const url = new URL(`https://storerocket.io/api/v2/projects/${encodeURIComponent(projectId)}/locations/${encodeURIComponent(locationId)}`);
+url.searchParams.set("includeHours", "1");
+url.searchParams.set("includeFilters", "1");
+url.searchParams.set("includeFields", "1");
+url.searchParams.set("includeCallsToAction", "1");
+const response = await fetch(url, {
+  headers: {
+    Authorization: `Bearer ${token}`,
+    Accept: "application/json",
+  },
+  signal: AbortSignal.timeout(30_000),
+});
+
+const text = await response.text();
+if (!response.ok) throw new Error(`HTTP ${response.status}: ${text}`);
+console.log(JSON.parse(text));
+```
+
+```php PHP
+<?php
+
+$token = getenv("STOREROCKET_TOKEN") ?: throw new RuntimeException("Set STOREROCKET_TOKEN first.");
+$projectId = "PROJECT_ID";
+$locationId = "LOCATION_ID";
+
+$url = 'https://storerocket.io/api/v2/projects/' . rawurlencode($projectId) . '/locations/' . rawurlencode($locationId);
+$url .= "?" . http_build_query([
+    'includeHours' => 1,
+    'includeFilters' => 1,
+    'includeFields' => 1,
+    'includeCallsToAction' => 1,
+], "", "&", PHP_QUERY_RFC3986);
+
+$curl = curl_init($url);
+curl_setopt_array($curl, [
+    CURLOPT_HTTPHEADER => [
+        "Authorization: Bearer $token",
+        "Accept: application/json",
+    ],
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_CONNECTTIMEOUT => 5,
+    CURLOPT_TIMEOUT => 30,
+]);
+
+$text = curl_exec($curl);
+$error = curl_error($curl);
+$status = (int) curl_getinfo($curl, CURLINFO_HTTP_CODE);
+curl_close($curl);
+
+if ($text === false) {
+    throw new RuntimeException("Request failed: $error");
+}
+if ($status < 200 || $status >= 300) {
+    throw new RuntimeException("HTTP $status: $text");
+}
+$data = json_decode($text, false, 512, JSON_THROW_ON_ERROR);
+echo json_encode($data, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR), PHP_EOL;
+```
+
 </RequestExample>
 
 ## Response format
@@ -30,7 +99,7 @@ curl --get 'https://storerocket.io/api/v2/projects/PROJECT_ID/locations/LOCATION
 Successful reads and writes return `200` with a `data` object. The example below shows selected fields with illustrative values.
 
 <ResponseExample>
-```json
+```json Response
 {
   "data": {
     "id": "LOCATION_ID",

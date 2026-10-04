@@ -11,14 +11,71 @@ The token belongs to your user account and can access projects that account belo
 
 ## Send the token
 
-```bash
+<CodeGroup>
+
+```bash cURL
 curl 'https://storerocket.io/api/v2/projects' \
   -H 'Authorization: Bearer YOUR_TOKEN' \
   -H 'Accept: application/json'
 ```
 
+```javascript JavaScript
+const token = process.env.STOREROCKET_TOKEN;
+if (!token) throw new Error("Set STOREROCKET_TOKEN first.");
+
+const url = new URL(`https://storerocket.io/api/v2/projects`);
+const response = await fetch(url, {
+  headers: {
+    Authorization: `Bearer ${token}`,
+    Accept: "application/json",
+  },
+  signal: AbortSignal.timeout(30_000),
+});
+
+const text = await response.text();
+if (!response.ok) throw new Error(`HTTP ${response.status}: ${text}`);
+console.log(JSON.parse(text));
+```
+
+```php PHP
+<?php
+
+$token = getenv("STOREROCKET_TOKEN") ?: throw new RuntimeException("Set STOREROCKET_TOKEN first.");
+
+$url = 'https://storerocket.io/api/v2/projects';
+
+$curl = curl_init($url);
+curl_setopt_array($curl, [
+    CURLOPT_HTTPHEADER => [
+        "Authorization: Bearer $token",
+        "Accept: application/json",
+    ],
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_CONNECTTIMEOUT => 5,
+    CURLOPT_TIMEOUT => 30,
+]);
+
+$text = curl_exec($curl);
+$error = curl_error($curl);
+$status = (int) curl_getinfo($curl, CURLINFO_HTTP_CODE);
+curl_close($curl);
+
+if ($text === false) {
+    throw new RuntimeException("Request failed: $error");
+}
+if ($status < 200 || $status >= 300) {
+    throw new RuntimeException("HTTP $status: $text");
+}
+$data = json_decode($text, false, 512, JSON_THROW_ON_ERROR);
+echo json_encode($data, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR), PHP_EOL;
+```
+
+</CodeGroup>
+
 Use `Authorization: Bearer`, not an `X-API-Key` header or a token in the URL. Keep tokens in server-side integrations and out of public website code.
 For JSON request bodies, also send `Content-Type: application/json`.
+
+JavaScript examples run in Node.js 22 or later; PHP examples require PHP 8.2 or later with cURL. Both read `STOREROCKET_TOKEN` from your environment. See the [quickstart](/api/quickstart) for setup.
 
 ## Location permissions
 

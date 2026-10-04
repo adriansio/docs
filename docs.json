@@ -31,9 +31,16 @@
         "group": "Start here",
         "pages": [
           "index",
+          "api/quickstart",
           "api/introduction",
           "api/authentication",
           "api/errors"
+        ]
+      },
+      {
+        "group": "Integration guides",
+        "pages": [
+          "api/sync-locations"
         ]
       },
       {

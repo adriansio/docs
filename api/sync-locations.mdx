@@ -1,0 +1,296 @@
+---
+title: 'Sync location updates'
+description: 'Read every page, preview changes and update locations from your system.'
+---
+
+Keep existing StoreRocket locations aligned with the information your system owns. This guide includes complete JavaScript and PHP scripts: they read every page, check the target IDs, preview changes and apply them with PATCH.
+
+## Before you start
+
+Follow the [quickstart](/api/quickstart) to set `STOREROCKET_TOKEN` and `STOREROCKET_PROJECT_ID`. Your token needs `location:read` and `location:update`, and the project needs API access.
+JavaScript uses Node.js 22 or later. PHP uses PHP 8.2 or later with cURL. Run these examples on your server or from your terminal.
+
+Keep a mapping between each ID in your own system and the public StoreRocket location `id`. Read existing IDs from [List locations](/api/locations/list); when you [create a location](/api/locations/create), save its returned `data.id`. Names and addresses can change or be shared by multiple locations, so use IDs for matching.
+
+## Prepare your changes
+
+Save a file named `changes.json` beside the script. Replace `LOCATION_ID` with an existing public location ID in this project. Include one object per location, containing only the fields you intend to change:
+
+```json changes.json
+[
+  {
+    "id": "LOCATION_ID",
+    "phone": "555-0101",
+    "hours": {"mon": "09:00-17:00"}
+  }
+]
+```
+
+This updates the phone and Monday's hours. Omitted fields and other weekdays stay unchanged. The script removes `id` from the request body and uses it in the URL.
+
+Use [writable field names](/api/locations/create#additional-fields), rather than sending a read response back as an update. For example, read responses contain `fields` arrays, but writes accept named objects.
+Send only fields your source system controls, so a sync preserves unrelated dashboard edits.
+
+<Tip>
+An omitted `hours` value or `"hours": {}` preserves the schedule. `"hours": null` removes it, and `"hours": {"mon": null}` clears only Monday. PHP must preserve an empty JSON object as an object; the script below does this when reading your file. See the [opening-hours contract](/api/locations/update#opening-hours).
+</Tip>
+
+## Read every page
+
+Location lists are paginated. Each response has a `data` array and pagination `links` and `meta`; a request reads at most 100 locations. Both scripts keep `limit=100` and `includeHours=1` on each request and continue through `meta.last_page`.
+
+They check **every target ID before sending the first PATCH**. If any target is missing from the chosen project, the script stops without sending an update.
+Pagination reads the current data on each page; it is not a frozen snapshot. Run one sync per project at a time and avoid changing the location list while collecting IDs.
+
+## Copy the complete script
+
+Choose your language. Save the JavaScript example as `sync-locations.mjs` or the PHP example as `sync-locations.php`, in the same folder as `changes.json`. No SDK or additional library is required.
+
+<CodeGroup>
+
+```javascript JavaScript
+import { readFile } from "node:fs/promises";
+import { setTimeout as sleep } from "node:timers/promises";
+
+const token = process.env.STOREROCKET_TOKEN;
+const projectId = process.env.STOREROCKET_PROJECT_ID;
+if (!token || !projectId) {
+  throw new Error("Set STOREROCKET_TOKEN and STOREROCKET_PROJECT_ID first.");
+}
+const baseUrl = "https://storerocket.io/api/v2";
+const path = `/projects/${encodeURIComponent(projectId)}/locations`;
+const apply = process.argv.includes("--apply");
+const changes = JSON.parse(await readFile("changes.json", "utf8"));
+if (!Array.isArray(changes) || changes.some(change =>
+  !change || typeof change !== "object" || Array.isArray(change) ||
+  typeof change.id !== "string" || !change.id
+)) {
+  throw new Error("changes.json must be an array of objects with a public string id.");
+}
+if (new Set(changes.map(change => change.id)).size !== changes.length) {
+  throw new Error("Use one change per location ID.");
+}
+
+async function request(method, endpoint, body) {
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const response = await fetch(baseUrl + endpoint, {
+      method,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: body === undefined ? undefined : JSON.stringify(body),
+      signal: AbortSignal.timeout(30_000),
+    });
+    const text = await response.text();
+    if (response.status === 429 && attempt < 3) {
+      const header = Number(response.headers.get("Retry-After") ?? 60);
+      const seconds = Number.isFinite(header) && header >= 0 ? header : 60;
+      console.log(`Rate limited; waiting ${seconds} seconds.`);
+      await sleep(seconds * 1000);
+      continue;
+    }
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status} (${method} ${endpoint}): ${text}`);
+    }
+    return JSON.parse(text);
+  }
+}
+
+const knownIds = new Set();
+let page = 1;
+let lastPage = 1;
+do {
+  const result = await request("GET", `${path}?limit=100&includeHours=1&page=${page}`);
+  if (!Array.isArray(result.data) || !Number.isSafeInteger(result.meta?.last_page) ||
+      result.meta.last_page < 1) {
+    throw new Error("Expected a paginated location response with data and meta.last_page.");
+  }
+  for (const location of result.data) knownIds.add(location.id);
+  lastPage = result.meta.last_page;
+  page++;
+} while (page <= lastPage);
+
+// Check every ID before sending the first update.
+for (const change of changes) {
+  if (!knownIds.has(change.id)) {
+    throw new Error(`Location ${change.id} was not found in this project. No updates sent.`);
+  }
+}
+
+for (const { id, ...update } of changes) {
+  if (!apply) {
+    console.log(`Would PATCH ${id}: ${JSON.stringify(update)}`);
+    continue;
+  }
+  await request("PATCH", `${path}/${encodeURIComponent(id)}`, update);
+  console.log(`Updated ${id}.`);
+}
+console.log(apply ? "Sync complete." : "Preview complete. Run again with --apply to save.");
+```
+
+```php PHP
+<?php
+
+$token = getenv("STOREROCKET_TOKEN");
+$projectId = getenv("STOREROCKET_PROJECT_ID");
+if (!$token || !$projectId) {
+    throw new RuntimeException("Set STOREROCKET_TOKEN and STOREROCKET_PROJECT_ID first.");
+}
+$baseUrl = "https://storerocket.io/api/v2";
+$path = "/projects/" . rawurlencode($projectId) . "/locations";
+$apply = in_array("--apply", $argv, true);
+
+// Decode objects as objects so an empty hours object stays {}, not [].
+$changes = json_decode(file_get_contents("changes.json"), false, 512, JSON_THROW_ON_ERROR);
+if (!is_array($changes)) {
+    throw new RuntimeException("changes.json must be an array of objects with a public string id.");
+}
+$seenIds = [];
+foreach ($changes as $change) {
+    if (!$change instanceof stdClass || !isset($change->id) ||
+        !is_string($change->id) || $change->id === "") {
+        throw new RuntimeException("Each change needs a public string id.");
+    }
+    if (isset($seenIds[$change->id])) {
+        throw new RuntimeException("Use one change per location ID.");
+    }
+    $seenIds[$change->id] = true;
+}
+
+function request(string $method, string $endpoint, ?stdClass $body = null): stdClass
+{
+    global $baseUrl, $token;
+    for ($attempt = 0; $attempt < 4; $attempt++) {
+        $retryAfter = 60;
+        $curl = curl_init($baseUrl . $endpoint);
+        $options = [
+            CURLOPT_CUSTOMREQUEST => $method,
+            CURLOPT_HTTPHEADER => [
+                "Authorization: Bearer $token",
+                "Accept: application/json",
+                "Content-Type: application/json",
+            ],
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_CONNECTTIMEOUT => 5,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HEADERFUNCTION => function ($handle, string $line) use (&$retryAfter): int {
+                if (str_starts_with(strtolower($line), "retry-after:")) {
+                    $value = trim(substr($line, strlen("retry-after:")));
+                    $retryAfter = ctype_digit($value) ? (int) $value : 60;
+                }
+                return strlen($line);
+            },
+        ];
+        if ($body !== null) {
+            $options[CURLOPT_POSTFIELDS] = json_encode($body, JSON_THROW_ON_ERROR);
+        }
+        curl_setopt_array($curl, $options);
+        $text = curl_exec($curl);
+        $error = curl_error($curl);
+        $status = (int) curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        curl_close($curl);
+        if ($text === false) {
+            throw new RuntimeException("Request failed: $error");
+        }
+        if ($status === 429 && $attempt < 3) {
+            echo "Rate limited; waiting $retryAfter seconds.", PHP_EOL;
+            sleep($retryAfter);
+            continue;
+        }
+        if ($status < 200 || $status >= 300) {
+            throw new RuntimeException("HTTP $status ($method $endpoint): $text");
+        }
+        return json_decode($text, false, 512, JSON_THROW_ON_ERROR);
+    }
+    throw new RuntimeException("Retry limit reached.");
+}
+
+$knownIds = [];
+$page = 1;
+$lastPage = 1;
+do {
+    $result = request("GET", "$path?limit=100&includeHours=1&page=$page");
+    if (!isset($result->data, $result->meta->last_page) || !is_array($result->data) ||
+        !is_int($result->meta->last_page) || $result->meta->last_page < 1) {
+        throw new RuntimeException("Expected a paginated location response with data and meta.last_page.");
+    }
+    foreach ($result->data as $location) {
+        $knownIds[$location->id] = true;
+    }
+    $lastPage = $result->meta->last_page;
+    $page++;
+} while ($page <= $lastPage);
+
+// Check every ID before sending the first update.
+foreach ($changes as $change) {
+    if (!isset($knownIds[$change->id])) {
+        throw new RuntimeException("Location $change->id was not found in this project. No updates sent.");
+    }
+}
+
+foreach ($changes as $change) {
+    $update = clone $change;
+    unset($update->id);
+    if (!$apply) {
+        echo "Would PATCH $change->id: ", json_encode($update, JSON_THROW_ON_ERROR), PHP_EOL;
+        continue;
+    }
+    request("PATCH", $path . "/" . rawurlencode($change->id), $update);
+    echo "Updated $change->id.", PHP_EOL;
+}
+echo $apply ? "Sync complete." : "Preview complete. Run again with --apply to save.", PHP_EOL;
+```
+
+</CodeGroup>
+
+## Preview first
+
+Run one of these commands from the folder containing the script and `changes.json`:
+
+<CodeGroup>
+
+```bash JavaScript
+node sync-locations.mjs
+```
+
+```bash PHP
+php sync-locations.php
+```
+
+</CodeGroup>
+
+The script reads your locations and prints `Would PATCH` with the ID and proposed fields. It sends no write requests in preview mode. Check the project, IDs, fields and any explicit clearing before applying.
+
+## Apply the reviewed changes
+
+<CodeGroup>
+
+```bash JavaScript
+node sync-locations.mjs --apply
+```
+
+```bash PHP
+php sync-locations.php --apply
+```
+
+</CodeGroup>
+
+Each successful PATCH returns `200`; the script prints `Updated` with the location ID. Requests run sequentially. The examples update existing locations only and do not create or delete locations.
+
+## Handle errors and retries
+
+| Result | Script behavior | Your action |
+| --- | --- | --- |
+| `401`, `403` or `404` | Stops with the HTTP status and response body | Check token, permissions, project access and IDs |
+| `422` | Stops and prints the field errors | Correct the rejected fields; that request saved no changes |
+| `429` | Waits for `Retry-After`, with at most four attempts per request | Space requests out if the shared limit is still being reached |
+| Connection error, timeout or `500` | Stops without automatically retrying the write | Read the affected location to check the result before restarting |
+
+A PATCH is atomic for **one location**, not for the whole file. If a later request fails, earlier successful updates remain saved. The script prints each completed ID so you can resume deliberately.
+A location can also change after the preflight read; a later `404` stops the script.
+
+The API uses a shared limit of 1,000 requests per minute. The scripts retry only `429` responses and show errors rather than reporting a failed request as successful. See the [error reference](/api/errors#rate-limits-and-retries) for the complete policy, including why a failed connection after POST can lead to a duplicate if retried blindly.
+
+For opening hours, text fields, filters and attachments, follow the [PATCH field contract](/api/locations/update). Add creation or deletion to an integration as explicit operations with their own handling.
