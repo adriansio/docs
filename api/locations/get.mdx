@@ -8,10 +8,10 @@ Requires `location:read` and project API access. The location must belong to the
 
 <ParamField path="project_id" type="string" required>The public project ID.</ParamField>
 <ParamField path="location_id" type="string" required>The public location ID.</ParamField>
-<ParamField query="includeHours" type="integer">Send `1` to include opening hours.</ParamField>
-<ParamField query="includeFilters" type="integer">Send `1` to include filters.</ParamField>
-<ParamField query="includeFields" type="integer">Send `1` to include custom fields.</ParamField>
-<ParamField query="includeCallsToAction" type="integer">Send `1` to include calls to action.</ParamField>
+<ParamField query="includeHours" type="number">Send `1` to include opening hours.</ParamField>
+<ParamField query="includeFilters" type="number">Send `1` to include filters.</ParamField>
+<ParamField query="includeFields" type="number">Send `1` to include custom fields.</ParamField>
+<ParamField query="includeCallsToAction" type="number">Send `1` to include calls to action.</ParamField>
 
 JavaScript examples run in Node.js 22 or later; PHP examples require PHP 8.2 or later with cURL. Both read `STOREROCKET_TOKEN` from your environment. See the [quickstart](/api/quickstart) for setup.
 
@@ -99,7 +99,7 @@ echo json_encode($data, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR), PHP_EOL;
 Successful reads and writes return `200` with a `data` object. The example below shows selected fields with illustrative values.
 
 <ResponseExample>
-```json Response
+```json Example response
 {
   "data": {
     "id": "LOCATION_ID",

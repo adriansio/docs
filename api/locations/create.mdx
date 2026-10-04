@@ -2,9 +2,12 @@
 title: 'Create a location'
 description: 'Add a location, with or without a street address or opening hours.'
 api: 'POST /api/v2/projects/{project_id}/locations'
+playground: 'simple'
 ---
 
 Requires `location:create` and project API access. Returns `200` and the [location resource](/api/locations/get#response-format).
+
+<Note>Run this request with the cURL, JavaScript or PHP examples. It creates a real location; the example sets `visible` to `false` so it stays hidden from the locator.</Note>
 
 <ParamField path="project_id" type="string" required>The public project ID.</ParamField>
 <ParamField body="name" type="string" required>Location name.</ParamField>

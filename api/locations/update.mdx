@@ -2,10 +2,13 @@
 title: 'Update selected fields'
 description: 'Change selected fields and clear values without resending the location.'
 api: 'PATCH /api/v2/projects/{project_id}/locations/{location_id}'
+playground: 'simple'
 ---
 
 Requires `location:update` and project API access. Send a JSON object containing only the fields you want to change. Omitted inputs and attachments keep their saved values; generated addresses can refresh when address components change, as described below.
 Returns `200` and the [updated location](/api/locations/get#response-format).
+
+<Note>Run write requests with the cURL, JavaScript or PHP examples. They change real location data; use a location you created for testing.</Note>
 
 <ParamField path="project_id" type="string" required>The public project ID.</ParamField>
 <ParamField path="location_id" type="string" required>The public location ID belonging to the project.</ParamField>
@@ -98,6 +101,15 @@ echo json_encode($data, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR), PHP_EOL;
 </RequestExample>
 
 You do not need to resend the name, city, hours, filters, or other saved information. See [Create a location](/api/locations/create#additional-fields) for public field names.
+
+## Test an update
+
+1. [Read your test location](/api/locations/get) with `includeHours=1` and record its phone, name, city and hours.
+2. Replace `PROJECT_ID`, `LOCATION_ID` and `YOUR_TOKEN` in the cURL example. JavaScript and PHP use `STOREROCKET_TOKEN` from the [quickstart](/api/quickstart).
+3. Run the example. Expect `200` with `data.phone` set to `555-0101`.
+4. Read the same location again with `includeHours=1`. The phone has changed; the omitted name, city and hours are unchanged.
+
+For clearing tests, replace the JSON body with an example below, run the same PATCH request, and read the location again with `includeHours=1` or the matching include flag. Expect the result shown in each table. Restore any values you want to keep after testing.
 
 ## Opening hours
 

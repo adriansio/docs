@@ -85,7 +85,8 @@
       }
     },
     "playground": {
-      "display": "simple"
+      "display": "interactive",
+      "proxy": false
     }
   },
   "redirects": [

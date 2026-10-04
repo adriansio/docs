@@ -1,3 +1,13 @@
+/* API pages need separation; guide pages already have a bottom margin. */
+#api-playground-2-operation-page + #pagination {
+  margin-block-start: 2.5rem;
+}
+
+/* Do not add a second gap when Mintlify emits an empty response wrapper. */
+#api-playground-2-operation-page .mdx-content > div:last-child:empty {
+  display: none;
+}
+
 /* Keep short request examples close to the explanation on inline layouts. */
 @media (max-width: 1279px) {
   #api-playground-2-operation-page [class~="min-h-[18rem]"] {

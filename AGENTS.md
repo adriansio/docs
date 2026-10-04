@@ -22,6 +22,9 @@ agent working on this documentation repository.
 - Run mint validate, mint broken-links and python3 scripts/check-examples.py.
   Check the actual rendered and copied result. The example checker uses only
   local HTTP fixtures; never run write examples against a real customer account.
+  Check every page's final content and navigation gap in both themes and sizes.
+  Verify playground request payloads and HTTP results, not only visible controls;
+  write forms must preserve omission, null, empty objects/arrays and false.
 - Never push directly to main or merge a PR. Adriano merges; main publishes
   automatically. Verify deployed pages after the merge.
 
