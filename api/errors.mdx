@@ -9,12 +9,19 @@ Use the HTTP status to decide whether to correct your request or retry it.
 | Status | Meaning | Action |
 | --- | --- | --- |
 | 200 | Request succeeded | Read the response body |
+| 400 | Query parameters are nested too deeply | Reduce nesting in query parameter names |
 | 401 | Authentication failed | Check your Bearer token |
 | 403 | API access or a token permission is missing | Check the project and token permissions |
 | 404 | Project/location was not found or is outside your access | Check both public IDs and project membership |
 | 422 | Request validation failed | Correct the named fields |
 | 429 | Rate limit reached | Wait for `Retry-After` |
 | 500 | Server error | Check the result before retrying a write |
+
+## Query parameter nesting
+
+When query parameter names exceed the supported nesting depth, the request returns `400` with the message `Reduce query parameter nesting to the supported limit.` Correct the query before retrying.
+
+This limit applies to parameter names. Square brackets inside a parameter value remain supported.
 
 ## Validation errors
 
