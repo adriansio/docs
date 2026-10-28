@@ -41,3 +41,10 @@
     opacity: 1;
   }
 }
+
+/* Leave room for the native theme control beside the desktop wordmark. */
+@media (min-width: 1024px) {
+  .nav-logo {
+    max-width: 10rem;
+  }
+}
