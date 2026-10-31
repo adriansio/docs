@@ -122,7 +122,7 @@ Send `null` to clear an optional contact or social field, such as `phone`, `emai
 
 Updating address components also refreshes an address previously generated from those components. A separately supplied custom address stays in place unless you explicitly replace or clear it.
 
-When either coordinate is missing or zero after an update, V1 queues geocoding. Changing an address alone does not replace existing nonzero coordinates; provide the new coordinates when moving a location.
+Changing the address moves the pin to the new address shortly after the response, unless you send `lat` or `lng`. A reworded address in the same place keeps the existing pin, and an address that cannot be found leaves the pin and visibility unchanged. Send `"lat": null, "lng": null` to clear the pin and geocode the address. When either coordinate is missing or zero after an update, V1 queues geocoding. See [addresses and coordinates](/api/errors#addresses-and-coordinates).
 
 ## Writable fields
 

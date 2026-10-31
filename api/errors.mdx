@@ -62,5 +62,11 @@ Retrying a POST can create another location if the original request succeeded be
 
 POST and PUT can geocode synchronously when either coordinate is missing or zero. Both accept zero during validation but retain this older geocoding behavior.
 
-A PATCH affecting address or coordinate fields queues geocoding only if a coordinate is missing; it preserves supplied zero coordinates. The immediate response can still have null coordinates.
-For precise pins, supply both coordinates. Changing a phone or other unrelated field with PATCH does not trigger geocoding.
+**Changing an address moves the pin.** When an update changes `address`, `address_line_1`, `address_line_2`, `city`, `state`, `postcode` or `country` and sends neither `lat` nor `lng`, StoreRocket looks up the new address. The pin moves when the new address is more than 100 meters from the old one. A reworded address in the same place, such as `St` to `Street` or a new suite number, keeps the existing pin, including one placed by hand. If the new address cannot be found, or geocoding is temporarily unavailable, the pin and the location's visibility stay as they were.
+
+- V2 PUT moves the pin during the request. The response contains the new coordinates.
+- V2 PATCH and V1 PUT move the pin shortly after the response, which still shows the previous coordinates.
+
+**Coordinates you send always win.** Include `lat` and `lng` to place the pin yourself; the address is then not looked up. Sending the location's current coordinates with a new address keeps the pin where it is. To let StoreRocket place the pin from the address, omit `lat` and `lng`, or send `"lat": null, "lng": null` to clear the pin and geocode the address as for a new location. If a cleared pin's address cannot be found, the coordinates stay null and the location is hidden (`visible: false`) until it has coordinates.
+
+A PATCH affecting address or coordinate fields also queues geocoding when a coordinate is missing; it preserves supplied zero coordinates. The immediate response can still have null coordinates. Changing a phone or other unrelated field does not trigger geocoding.

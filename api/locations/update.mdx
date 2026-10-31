@@ -163,7 +163,7 @@ Use [public field names](/api/locations/create#additional-fields). Internal fiel
 
 Changing address components refreshes an automatically generated `address` or `display_address`. A custom combined address is preserved when omitted. Send `"address": null` to regenerate it from saved components; clearing a slug can generate one from the location.
 
-PATCH touching address/coordinate fields queues geocoding only if a coordinate is missing. Other PATCH requests do not trigger geocoding. The immediate response may precede a queued geocode result.
+Changing an address field moves the pin when the new address is somewhere else. PATCH does this shortly after the response, which still shows the previous coordinates. Coordinates you send always win, and `"lat": null, "lng": null` clears the pin and geocodes the address. PATCH touching address or coordinate fields also queues geocoding when a coordinate is missing; other PATCH requests do not trigger geocoding. See [addresses and coordinates](/api/errors#addresses-and-coordinates).
 
 ## Atomic validation
 
