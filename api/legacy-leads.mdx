@@ -1,6 +1,6 @@
 ---
 title: 'V1 leads'
-description: 'Read and delete leads captured by your StoreRocket locator.'
+description: 'Read and delete leads captured by your StoreRocket locator or Site.'
 ---
 
 These endpoints use [V1 authentication and project scope](/api/legacy). Use the legacy token from your existing integration, not a newly created V2 token.
@@ -101,8 +101,10 @@ A lead returned by GET has these fields. Values below are illustrative, and visi
 | `query` | Search query captured with the lead |
 | `lat`, `lng` | Coordinates captured with the lead, when available |
 | `created_at` | Creation timestamp |
-| `comment` | Visitor's comment |
+| `comment` | Visitor's message, including answers collected by a Sites enquiry form |
 | `url` | Page URL captured with the lead |
+
+For Sites enquiries, `comment` contains the complete saved message, including the submitted size-request answers and notes when present. It can exceed 255 characters and contain line breaks. Accept the complete string without truncating it. Existing locator leads retain their original comment.
 
 In a list response, this object appears inside `data`. It does not include a status, assigned location, or an `updated_at` field.
 
