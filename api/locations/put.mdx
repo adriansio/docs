@@ -99,7 +99,7 @@ echo json_encode($data, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR), PHP_EOL;
 
 </RequestExample>
 
-Returns `200` and the [location resource](/api/locations/get#response-format). Field descriptions are on [Create a location](/api/locations/create).
+Returns `200` and the [location resource](/api/locations/get#response-format), with a [`geocoding`](/api/errors#the-geocoding-object) object next to `data` describing any address lookup. Field descriptions are on [Create a location](/api/locations/create).
 
 ## Existing PUT behavior
 
@@ -109,7 +109,7 @@ Returns `200` and the [location resource](/api/locations/get#response-format). F
 - Omitted marker and location-type selections use the project's defaults.
 - Omitted hours, null hours, and `{}` leave any existing hours unchanged. A nonempty hours object must include all seven days; it replaces the saved week.
 - Use PATCH for `hours:null` clearing or partial weekdays.
-- Changing the address moves the pin during the request, unless you send `lat` or `lng`. Send `"lat": null, "lng": null` to clear the pin and geocode the address. PUT also geocodes synchronously when either coordinate is missing or zero. See [addresses and coordinates](/api/errors#addresses-and-coordinates).
+- Changing the address moves the pin during the request, unless you send `lat` or `lng`. An address found only roughly, such as its town or postcode area, keeps the pin, and `geocoding.status` is `approximate`. Send `"lat": null, "lng": null` to clear the pin and geocode the address. PUT also geocodes synchronously when either coordinate is missing or zero. See [addresses and coordinates](/api/errors#addresses-and-coordinates).
 - Send null to clear an optional text field such as `phone`, `email` or `url`. Omitting it keeps the saved value.
 
 Errors: `401`, `403`, `404`, `422`, `429`. Invalid input saves no part of the location update. See [errors](/api/errors).

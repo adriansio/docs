@@ -6,7 +6,7 @@ playground: 'simple'
 ---
 
 Requires `location:update` and project API access. Send a JSON object containing only the fields you want to change. Omitted inputs and attachments keep their saved values; generated addresses can refresh when address components change, as described below.
-Returns `200` and the [updated location](/api/locations/get#response-format).
+Returns `200` and the [updated location](/api/locations/get#response-format), with a [`geocoding`](/api/errors#the-geocoding-object) object next to `data`: `queued` when the update queued an address lookup, otherwise `null`.
 
 <Note>Run write requests with the cURL, JavaScript or PHP examples. They change real location data; use a location you created for testing.</Note>
 

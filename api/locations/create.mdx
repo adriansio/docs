@@ -5,7 +5,7 @@ api: 'POST /api/v2/projects/{project_id}/locations'
 playground: 'simple'
 ---
 
-Requires `location:create` and project API access. Returns `200` and the [location resource](/api/locations/get#response-format).
+Requires `location:create` and project API access. Returns `200` and the [location resource](/api/locations/get#response-format), with a [`geocoding`](/api/errors#the-geocoding-object) object next to `data` describing the address lookup.
 
 <Note>Run this request with the cURL, JavaScript or PHP examples. It creates a real location; the example sets `visible` to `false` so it stays hidden from the locator.</Note>
 
@@ -159,6 +159,6 @@ Do not send an hours array or weekday objects containing `open`/`close` keys.
 | `cover` | Image URL or the project's stored image name |
 
 The response's `socials` list is derived; send individual public social field names when writing.
-POST can geocode synchronously when either coordinate is missing or zero. Supplying both nonzero coordinates avoids depending on a geocoding result. Zero passes validation, but POST and PUT retain this older geocoding behavior; PATCH preserves supplied zero coordinates.
+POST can geocode synchronously when either coordinate is missing or zero. Supplying both nonzero coordinates avoids depending on a geocoding result. Check `geocoding.status` in the response: `approximate` means only a rough match was found, such as the town or postcode area, and the location was placed there. Zero passes validation, but POST and PUT retain this older geocoding behavior; PATCH preserves supplied zero coordinates.
 
 Errors: `401`, `403`, `404`, `422`, `429`. Invalid input does not create a partially populated location. See [errors](/api/errors).
