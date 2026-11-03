@@ -79,8 +79,16 @@ Every V2 create, PUT and PATCH response includes `geocoding` next to `data`. It 
 
 ```json
 {
-  "data": { "id": "...", "lat": 59.3326, "lng": 18.0649, "visible": true },
-  "geocoding": { "status": "approximate", "match": "country" }
+  "data": {
+    "id": "...",
+    "lat": 59.3326,
+    "lng": 18.0649,
+    "visible": true
+  },
+  "geocoding": {
+    "status": "approximate",
+    "match": "country"
+  }
 }
 ```
 
