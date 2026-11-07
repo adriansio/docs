@@ -38,6 +38,12 @@
         ]
       },
       {
+        "group": "AI assistants",
+        "pages": [
+          "api/mcp"
+        ]
+      },
+      {
         "group": "Integration guides",
         "pages": [
           "api/sync-locations"
