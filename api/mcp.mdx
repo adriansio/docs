@@ -64,8 +64,11 @@ Then run `/mcp` in Claude Code and choose **Authenticate**.
 | | |
 | --- | --- |
 | Discovery | `https://storerocket.io/.well-known/oauth-protected-resource/mcp` |
-| Client registration | Dynamic (`/oauth/register`), public clients, PKCE `S256` |
+| Client registration | Dynamic (`/oauth/register`), public clients; callback addresses of supported assistants or `http://localhost/callback` on any port |
+| Authorization | Authorization code with PKCE `S256` only (`plain` is refused); scope `mcp:use` |
 | Access token | 1 hour, refreshed for 90 days of use |
+
+To disconnect an assistant, open [API Tokens](https://storerocket.io/app/account/api-tokens): **Connected assistants** lists each one with **Disconnect**. Resetting your password disconnects every assistant.
 
 ## Tools
 
