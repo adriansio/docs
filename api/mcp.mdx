@@ -17,11 +17,11 @@ Open [API Tokens](https://storerocket.io/app/account/api-tokens) and create a to
 
 | Permission | Lets the assistant |
 | --- | --- |
-| `location:read` | List and read locations and filters, get the install code |
-| `location:create` | Add locations |
-| `location:update` | Change locations |
-| `location:delete` | Delete locations, one per call |
-| `analytics:read` | Read analytics: views, searches, searches that found nothing, clicks, leads |
+| See locations (`location:read`) | Find and read locations and categories, get the install code |
+| Add locations (`location:create`) | Add locations |
+| Edit locations (`location:update`) | Change locations |
+| Delete locations (`location:delete`) | Delete locations, one per call |
+| See analytics (`analytics:read`) | Read analytics: views, searches, searches that found nothing, clicks, leads |
 
 The token reaches the projects your user account belongs to, on a plan that includes the REST API. Revoke it from the same page at any time.
 
@@ -57,27 +57,37 @@ Connectors added inside ChatGPT or the Claude apps sign in with OAuth instead of
 
 ## Tools
 
-Start with `list-projects`: every other tool takes a project `id` from it.
+Start with `list-projects`: every other tool takes a `project_id` from it (a 10-character id such as `Xn0pj9v86V`). Location tools take a `location_id` from `list-locations`.
 
-| Tool | What it does | Permission |
-| --- | --- | --- |
-| `list-projects` | Your projects (store locators): id, name, location count, status, plan | none |
-| `get-install-code` | The code that puts the locator on a website, with placement steps | `location:read` |
-| `list-locations` | Locations, up to 100 per page, filtered by name, city, state, country or postal code | `location:read` |
-| `get-location` | One location with hours, filters, custom fields and buttons | `location:read` |
-| `list-filters` | Filter (category) names, with how many locations carry each | `location:read` |
-| `create-locations` | Add up to 50 locations; each is saved on its own and the answer lists created and refused | `location:create` |
-| `update-location` | Change only the fields sent, as [PATCH](/api/locations/update) does; `null` clears a field | `location:update` |
-| `delete-location` | Delete one location, permanently | `location:delete` |
-| `get-analytics-overview` | Views, searches, searches with no results, clicks and leads for a date range, with the period before | `analytics:read` |
-| `get-top-searches` | The most searched places and words, with how many found nothing | `analytics:read` |
-| `get-searches-with-no-results` | Where visitors searched and found no location nearby | `analytics:read` |
-| `get-most-clicked-locations` | The most clicked locations, by kind of click (directions, calls, website, buttons) | `analytics:read` |
+| Tool | Title | What it does | Permission |
+| --- | --- | --- | --- |
+| `list-projects` | Your store locators | Your projects: id, name, location count, status, plan | none |
+| `get-install-code` | Install code | The code that puts the locator on a website, placement steps, and whether it is live (last page seen in 30 days) | See locations |
+| `list-locations` | Find locations | Up to 100 per page, filtered by name, address, city, state, country or postal code; `include` adds hours, filters, fields or calls_to_action | See locations |
+| `get-location` | Location details | One location with hours, categories, custom fields and buttons | See locations |
+| `list-filters` | Location categories | Category (filter) names with how many locations carry each | See locations |
+| `create-locations` | Add locations | Add 1 to 50 locations; the answer lists created and refused, with reasons | Add locations |
+| `update-locations` | Update locations | Change 1 to 50 locations, each `{location_id, changes}`; only the fields sent change, as [PATCH](/api/locations/update) does | Edit locations |
+| `delete-location` | Delete a location | Delete one location, permanently | Delete locations |
+| `get-analytics-overview` | Locator performance | Views, searches, searches with no results, clicks and leads for a date range, next to the period before | See analytics |
+| `get-top-searches` | Top searches | The most searched places and words, with how many found nothing | See analytics |
+| `get-searches-with-no-results` | Unmet demand | Where visitors searched and found no location nearby | See analytics |
+| `get-most-clicked-locations` | Most clicked locations | The most clicked locations, by kind of click (opened, directions, calls, emails, website, buttons) | See analytics |
+
+Every tool declares its title, an output schema, and whether it reads, writes or deletes (read-only, destructive, idempotent and open-world hints).
 
 Location tools call the [REST API](/api/introduction): the same validation, geocoding and error messages. Analytics tools return the same numbers as Analytics in the dashboard. Dates are `YYYY-MM-DD` in UTC, up to 366 days per request, 30 days by default. Analytics count what visitors did on the locator, not sales or store visits.
+
+## Prompts
+
+| Prompt | What it asks the assistant |
+| --- | --- |
+| `weekly-demand-review` | Review the last 7 days: the numbers against the week before, unmet demand, the most clicked locations, and a few actions |
+| `install-store-locator` | Put the locator on a page with `get-install-code`, then call it again to confirm it is live |
 
 ## Limits and errors
 
 - Requests share your REST API rate limit. Analytics tools also allow 30 requests a minute per person.
 - A refused call returns an MCP tool error with the reason, such as a missing permission, a plan without API access, or a project id that is not in your account. Another account's projects and locations are never returned.
+- `create-locations` and `update-locations` save each item on its own. When none could be saved, the error still lists every item and its reason.
 - `create-locations` without coordinates looks each address up while the request waits. For hundreds of rows, use an import or [Google Sheets sync](https://help.storerocket.io) in the dashboard.
