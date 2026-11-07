@@ -9,7 +9,7 @@ StoreRocket runs a remote [Model Context Protocol](https://modelcontextprotocol.
 | --- | --- |
 | Server URL | `https://storerocket.io/mcp` |
 | Transport | Streamable HTTP |
-| Authentication | `Authorization: Bearer YOUR_TOKEN` |
+| Authentication | Sign in (OAuth) or `Authorization: Bearer YOUR_TOKEN` |
 
 ## Create a token
 
@@ -51,9 +51,21 @@ claude mcp add --transport http storerocket https://storerocket.io/mcp \
 
 Any MCP client that can send an `Authorization` header to a Streamable HTTP server can connect the same way. Keep the token out of shared repositories: in Cursor, use a user-level `~/.cursor/mcp.json`.
 
-<Note>
-Connectors added inside ChatGPT or the Claude apps sign in with OAuth instead of a pasted token. StoreRocket does not offer that sign-in yet.
-</Note>
+### Sign in instead of a token
+
+Clients that support MCP sign-in (OAuth 2.1), such as Claude, ChatGPT and Claude Code, need only the server URL. Add `https://storerocket.io/mcp` without a header; the client opens a StoreRocket page where you log in (or sign up) and press **Allow**. Allowing lets the assistant see, add and update your locations, read your analytics and get your install code, never your billing, plan, password or team.
+
+```bash Claude Code
+claude mcp add --transport http storerocket https://storerocket.io/mcp
+```
+
+Then run `/mcp` in Claude Code and choose **Authenticate**.
+
+| | |
+| --- | --- |
+| Discovery | `https://storerocket.io/.well-known/oauth-protected-resource/mcp` |
+| Client registration | Dynamic (`/oauth/register`), public clients, PKCE `S256` |
+| Access token | 1 hour, refreshed for 90 days of use |
 
 ## Tools
 
