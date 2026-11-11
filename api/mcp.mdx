@@ -23,7 +23,7 @@ Open [API Tokens](https://storerocket.io/app/account/api-tokens) and create a to
 | Delete locations (`location:delete`) | Delete locations, one per call |
 | See analytics (`analytics:read`) | Read analytics: views, searches, searches that found nothing, clicks, leads |
 
-The token reaches the projects your user account belongs to, on a plan that includes the REST API. Revoke it from the same page at any time.
+The token reaches the store locators your user account belongs to (each is a project in the REST API), on a plan that includes the REST API. Revoke it from the same page at any time.
 
 ## Connect your client
 
@@ -72,11 +72,11 @@ To disconnect an assistant, open [API Tokens](https://storerocket.io/app/account
 
 ## Tools
 
-Start with `list-projects`: every other tool takes a `project_id` from it (a 10-character id such as `Xn0pj9v86V`). Location tools take a `location_id` from `list-locations`.
+Start with `list-store-locators`: every other tool takes a `locator_id` from it (a 10-character id such as `Xn0pj9v86V`; it is the same id the REST API calls the project id). Location tools take a `location_id` from `list-locations`.
 
 | Tool | Title | What it does | Permission |
 | --- | --- | --- | --- |
-| `list-projects` | Your store locators | Your projects: id, name, location count, status, plan | none |
+| `list-store-locators` | Your store locators | Your store locators (projects in the REST API): id, name, location count, status, plan | none |
 | `get-install-code` | Install code | The code that puts the locator on a website, placement steps, and whether it is live (last page seen in 30 days) | See locations |
 | `list-locations` | Find locations | Up to 100 per page, filtered by name, address, city, state, country or postal code; `include` adds hours, filters, fields or calls_to_action | See locations |
 | `get-location` | Location details | One location with hours, categories, custom fields and buttons | See locations |
@@ -103,6 +103,6 @@ Location tools call the [REST API](/api/introduction): the same validation, geoc
 ## Limits and errors
 
 - Requests share your REST API rate limit. Analytics tools also allow 30 requests a minute per person.
-- A refused call returns an MCP tool error with the reason, such as a missing permission, a plan without API access, or a project id that is not in your account. Another account's projects and locations are never returned.
+- A refused call returns an MCP tool error with the reason, such as a missing permission, a plan without API access, or a store locator id that is not in your account. Another account's store locators and locations are never returned.
 - `create-locations` and `update-locations` save each item on its own. When none could be saved, the error still lists every item and its reason.
 - `create-locations` without coordinates looks each address up while the request waits. For hundreds of rows, use an import or [Google Sheets sync](https://help.storerocket.io) in the dashboard.
