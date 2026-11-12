@@ -1,6 +1,6 @@
 ---
 title: 'Connect an AI assistant (MCP)'
-description: 'Let Claude Code, Cursor and other MCP clients work on your locations and analytics with your API token.'
+description: 'Let Claude, ChatGPT, Cursor, VS Code and other MCP clients work on your locations and analytics.'
 ---
 
 StoreRocket runs a remote [Model Context Protocol](https://modelcontextprotocol.io) server. An AI assistant connected to it can put your store locator on a website, add and update locations, and read your locator's analytics, using the same API token and permissions as the REST API.
@@ -53,13 +53,22 @@ Any MCP client that can send an `Authorization` header to a Streamable HTTP serv
 
 ### Sign in instead of a token
 
-Clients that support MCP sign-in (OAuth 2.1), such as Claude, ChatGPT and Claude Code, need only the server URL. Add `https://storerocket.io/mcp` without a header; the client opens a StoreRocket page where you log in (or sign up) and press **Allow**. Allowing lets the assistant see, add and update your locations, read your analytics and get your install code, never your billing, plan, password or team.
+Clients that support MCP sign-in (OAuth 2.1), such as Claude, ChatGPT, Claude Code, Cursor and VS Code, need only the server URL. Add `https://storerocket.io/mcp` without a header; the client opens a StoreRocket page where you log in (or sign up) and press **Allow**. Allowing lets the assistant see, add and update your locations, read your analytics and get your install code, never your billing, plan, password or team.
 
 ```bash Claude Code
 claude mcp add --transport http storerocket https://storerocket.io/mcp
 ```
 
 Then run `/mcp` in Claude Code and choose **Authenticate**.
+
+In Cursor or VS Code, one click adds the server; the editor then asks you to sign in:
+
+- [Add to Cursor](cursor://anysphere.cursor-deeplink/mcp/install?name=StoreRocket&config=eyJ1cmwiOiJodHRwczovL3N0b3Jlcm9ja2V0LmlvL21jcCJ9): click **Install**, then **Connect** next to StoreRocket.
+- [Add to VS Code](vscode:mcp/install?%7B%22name%22%3A%22StoreRocket%22%2C%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fstorerocket.io%2Fmcp%22%7D): click **Install**, then sign in when VS Code asks.
+
+The same buttons are on [API Tokens](https://storerocket.io/app/account/api-tokens), next to **Add to Claude**.
+
+StoreRocket is listed in the official [MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers?search=io.storerocket) as `io.storerocket/storerocket`.
 
 | | |
 | --- | --- |
