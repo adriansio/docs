@@ -53,7 +53,7 @@ Any MCP client that can send an `Authorization` header to a Streamable HTTP serv
 
 ### Sign in instead of a token
 
-Clients that support MCP sign-in (OAuth 2.1), such as Claude, ChatGPT, Claude Code, Cursor and VS Code, need only the server URL. Add `https://storerocket.io/mcp` without a header; the client opens a StoreRocket page where you log in (or sign up) and press **Allow**. Allowing lets the assistant see, add and update your locations, read your analytics and get your install code, never your billing, plan, password or team.
+The MCP server works on every StoreRocket plan and free trial; analytics tools need a plan that includes Analytics. Clients that support MCP sign-in (OAuth 2.1), such as Claude, ChatGPT, Claude Code, Cursor and VS Code, need only the server URL. Add `https://storerocket.io/mcp` without a header; the client opens a StoreRocket page where you log in (or sign up) and press **Allow**. Allowing lets the assistant see, add and update your locations, read your analytics and get your install code, never your billing, plan, password or team.
 
 ```bash Claude Code
 claude mcp add --transport http storerocket https://storerocket.io/mcp
@@ -120,6 +120,6 @@ Location tools call the [REST API](/api/introduction): the same validation, geoc
 ## Limits and errors
 
 - Requests share your REST API rate limit. Analytics tools also allow 30 requests a minute per person.
-- A refused call returns an MCP tool error with the reason, such as a missing permission, a plan without API access, or a store locator id that is not in your account. Another account's store locators and locations are never returned.
+- A refused call returns an MCP tool error with the reason, such as a missing permission, a store locator with no active plan, analytics on a plan without Analytics, or a store locator id that is not in your account. Another account's store locators and locations are never returned.
 - `create-locations` and `update-locations` save each item on its own. When none could be saved, the error still lists every item and its reason.
 - `create-locations` without coordinates looks each address up while the request waits. For hundreds of rows, use an import or [Google Sheets sync](https://help.storerocket.io) in the dashboard.
