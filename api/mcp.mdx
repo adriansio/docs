@@ -93,6 +93,14 @@ Start with `list-store-locators`: every other tool takes a `locator_id` from it 
 | `create-locations` | Add locations | Add 1 to 50 locations; the answer lists created and refused, with reasons | Add locations |
 | `update-locations` | Update locations | Change 1 to 50 locations, each `{location_id, changes}`; only the fields sent change, as [PATCH](/api/locations/update) does | Edit locations |
 | `delete-location` | Delete a location | Delete one location, permanently | Delete locations |
+| `list-custom-fields` | Custom fields | Custom field names and types, with how many locations have a value, and whether the results list shows them | See locations |
+| `create-custom-field` | Add a custom field | Add a custom field: text, multiline, phone, url, email, boolean (yes or no) or number | Edit locations |
+| `update-custom-field` | Change a custom field | Rename a custom field or change its type; every location keeps its value | Edit locations |
+| `delete-custom-field` | Delete a custom field | Delete a custom field and its value on every location, permanently | Delete locations |
+| `list-buttons` | Buttons | Buttons in the order a location shows them: link for every location, every-location switch, colour, icon | See locations |
+| `create-button` | Add a button | Add a button; with `every_location` and a `link` it shows on every location, including ones added later | Edit locations |
+| `update-button` | Change a button | Change a button's title, link, every-location switch, colour, icon or position; only what is sent changes | Edit locations |
+| `delete-button` | Delete a button | Delete a button from every location, with each location's own link, permanently | Delete locations |
 | `get-analytics-overview` | Locator performance | Views, searches, searches with no results, clicks and leads for a date range, next to the period before | See analytics |
 | `get-top-searches` | Top searches | The most searched places and words, with how many found nothing | See analytics |
 | `get-searches-with-no-results` | Unmet demand | Where visitors searched and found no location nearby | See analytics |
@@ -100,7 +108,7 @@ Start with `list-store-locators`: every other tool takes a `locator_id` from it 
 
 Every tool declares its title, an output schema, and whether it reads, writes or deletes (read-only, destructive, idempotent and open-world hints).
 
-Location tools call the [REST API](/api/introduction): the same validation, geocoding and error messages. Analytics tools return the same numbers as Analytics in the dashboard. Dates are `YYYY-MM-DD` in UTC, up to 366 days per request, 30 days by default. Analytics count what visitors did on the locator, not sales or store visits.
+Location tools call the [REST API](/api/introduction): the same validation, geocoding and error messages. Custom field and button tools use the dashboard's own checks, and find a field or button by its name or title: the same names a location's `fields` and `callsToAction` take. Analytics tools return the same numbers as Analytics in the dashboard. Dates are `YYYY-MM-DD` in UTC, up to 366 days per request, 30 days by default. Analytics count what visitors did on the locator, not sales or store visits.
 
 ## Prompts
 
