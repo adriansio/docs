@@ -14,6 +14,7 @@ Reading needs `location:read`; creating, changing and deleting need `location:up
   "id": "k4ZqP0mE7d",
   "name": "Thanksgiving",
   "holiday_key": "US:thanksgiving-day",
+  "holiday_region": null,
   "start_date": "2026-11-26",
   "end_date": "2026-11-26",
   "until_further_notice": false,
@@ -31,8 +32,9 @@ Reading needs `location:read`; creating, changing and deleting need `location:up
 <ResponseField name="start_date" type="string">First date, `YYYY-MM-DD`, in each location's local calendar.</ResponseField>
 <ResponseField name="end_date" type="string | null">Last date, inclusive. Equal to `start_date` for one day. `null` only when `until_further_notice` is `true`.</ResponseField>
 <ResponseField name="hours" type="string | array">`"closed"`, `"regular"` (the location's normal weekly hours on those dates), `"open_24_hours"`, or up to six ranges `[{"opens": "09:00", "closes": "14:00"}]`. A range that closes earlier than it opens runs past midnight into the next date (`{"opens": "20:00", "closes": "02:00"}`).</ResponseField>
-<ResponseField name="applies_to" type="object">`type` is `all`, `countries` (ISO codes such as `US`), `regions` (country and region code such as `CA-QC`, `GB-SCT`, `US-NY`), `filters` (filter IDs) or `locations` (location IDs). Several values within one type mean any of them. `all` takes no values.</ResponseField>
+<ResponseField name="applies_to" type="object">Required. `type` is `all`, `countries` (ISO codes such as `US`), `regions` (country and region code such as `CA-QC`, `GB-SCT`, `US-NY`), `filters` (filter IDs) or `locations` (location IDs). Several values within one type mean any of them. `all` takes no values. Send `{"type": "all"}` for every location: a missing or `null` `applies_to` is refused with `422`, never read as every location.</ResponseField>
 <ResponseField name="holiday_key" type="string | null">A stable holiday identifier, such as `US:thanksgiving-day`, `US:christmas-day` or `retail:christmas-eve`. Needed for `repeats_yearly`.</ResponseField>
+<ResponseField name="holiday_region" type="string | null">Where a repeating holiday's date is read, as a country or country and region code (`AU-QLD`). Needed only when the holiday falls on different dates in different regions and the rule does not target that one region: Queensland's King's Birthday is in October, the rest of Australia's in June. `null` uses the rule's own region, if it targets one.</ResponseField>
 <ResponseField name="repeats_yearly" type="boolean">When `true`, the rule follows its holiday to its date every year (Thanksgiving 2027 is 25 November). Only a single day with a yearly `holiday_key` can repeat; an observed weekday or a one-time holiday cannot.</ResponseField>
 <ResponseField name="note" type="string | null">An optional line for visitors, at most 255 characters.</ResponseField>
 
