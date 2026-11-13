@@ -1,0 +1,131 @@
+---
+title: 'Holiday and special hours'
+description: 'Close locations for a holiday, open them on special times, or close them until further notice, with one rule for many locations.'
+---
+
+A special-hours rule gives dated opening hours that replace the weekly hours on those dates: Thanksgiving closed, Christmas Eve 09:00–14:00, closed for renovation from 23 November to 14 December, or closed until further notice. One rule can apply to every location, to countries, to states or provinces, to locations with a filter, or to chosen locations. Each location reads its rule on its **own local date**, so a rule for 26 November applies from midnight to midnight in every location's time zone.
+
+Reading needs `location:read`; creating, changing and deleting need `location:update`, and project API access, like the [location endpoints](/api/locations/list).
+
+## The rule object
+
+```json
+{
+  "id": "k4ZqP0mE7d",
+  "name": "Thanksgiving",
+  "holiday_key": "US:thanksgiving-day",
+  "start_date": "2026-11-26",
+  "end_date": "2026-11-26",
+  "until_further_notice": false,
+  "hours": "closed",
+  "repeats_yearly": true,
+  "note": null,
+  "applies_to": { "type": "countries", "values": ["US"] },
+  "source": "api",
+  "created_at": "2026-11-13T10:00:00+00:00",
+  "updated_at": "2026-11-13T10:00:00+00:00"
+}
+```
+
+<ResponseField name="name" type="string">What visitors see beside the date, at most 120 characters.</ResponseField>
+<ResponseField name="start_date" type="string">First date, `YYYY-MM-DD`, in each location's local calendar.</ResponseField>
+<ResponseField name="end_date" type="string | null">Last date, inclusive. Equal to `start_date` for one day. `null` only when `until_further_notice` is `true`.</ResponseField>
+<ResponseField name="hours" type="string | array">`"closed"`, `"regular"` (the location's normal weekly hours on those dates), `"open_24_hours"`, or up to six ranges `[{"opens": "09:00", "closes": "14:00"}]`. A range that closes earlier than it opens runs past midnight into the next date (`{"opens": "20:00", "closes": "02:00"}`).</ResponseField>
+<ResponseField name="applies_to" type="object">`type` is `all`, `countries` (ISO codes such as `US`), `regions` (country and region code such as `CA-QC`, `GB-SCT`, `US-NY`), `filters` (filter IDs) or `locations` (location IDs). Several values within one type mean any of them. `all` takes no values.</ResponseField>
+<ResponseField name="holiday_key" type="string | null">A stable holiday identifier, such as `US:thanksgiving-day`, `US:christmas-day` or `retail:christmas-eve`. Needed for `repeats_yearly`.</ResponseField>
+<ResponseField name="repeats_yearly" type="boolean">When `true`, the rule follows its holiday to its date every year (Thanksgiving 2027 is 25 November). Only a single day with a yearly `holiday_key` can repeat; an observed weekday or a one-time holiday cannot.</ResponseField>
+<ResponseField name="note" type="string | null">An optional line for visitors, at most 255 characters.</ResponseField>
+
+### Which rule wins
+
+When several rules cover the same location on the same date, the most specific one wins: a `locations` rule, then `filters`, then `regions`, then `countries`, then `all`. Between two rules of the same kind, the shorter date range wins, then the more recently created rule. Rules are never merged.
+
+A `countries` rule matches the location's country however it was typed (`US`, `USA`, `United States`); a location with no country matches the country of its time zone. A `filters` rule follows the filter's current members, including hidden filters. A `locations` rule whose locations were all deleted matches nothing: it never falls back to every location.
+
+## List rules
+
+`GET /api/v2/projects/{project_id}/special-hours` returns every rule of the project in `data`, earliest start first.
+
+```bash
+curl 'https://storerocket.io/api/v2/projects/PROJECT_ID/special-hours' \
+  -H 'Authorization: Bearer YOUR_TOKEN' \
+  -H 'Accept: application/json'
+```
+
+## Get a rule
+
+`GET /api/v2/projects/{project_id}/special-hours/{rule_id}` returns one rule in `data`, or `404` when it does not belong to the project.
+
+## Create a rule
+
+`POST /api/v2/projects/{project_id}/special-hours` returns `201` and the rule. A missing `end_date` means the same day as `start_date`; send `"until_further_notice": true` (and no `end_date`) for an open-ended closure.
+
+```bash
+curl -X POST 'https://storerocket.io/api/v2/projects/PROJECT_ID/special-hours' \
+  -H 'Authorization: Bearer YOUR_TOKEN' \
+  -H 'Accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -H 'Idempotency-Key: thanksgiving-2026-us' \
+  -d '{
+    "name": "Thanksgiving",
+    "holiday_key": "US:thanksgiving-day",
+    "start_date": "2026-11-26",
+    "hours": "closed",
+    "repeats_yearly": true,
+    "applies_to": { "type": "countries", "values": ["US"] }
+  }'
+```
+
+Christmas Eve short hours for two chosen locations:
+
+```bash
+curl -X POST 'https://storerocket.io/api/v2/projects/PROJECT_ID/special-hours' \
+  -H 'Authorization: Bearer YOUR_TOKEN' \
+  -H 'Accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "name": "Christmas Eve",
+    "start_date": "2026-12-24",
+    "hours": [{ "opens": "09:00", "closes": "14:00" }],
+    "applies_to": { "type": "locations", "values": ["LOCATION_ID_1", "LOCATION_ID_2"] }
+  }'
+```
+
+## Change a rule
+
+`PATCH /api/v2/projects/{project_id}/special-hours/{rule_id}` changes only the fields you send; everything else keeps its saved value. `applies_to` is replaced as a whole when sent. Sending an empty `values` list for anything but `all` is refused with `422`: clearing the locations never turns a rule into an account-wide one. To end an open-ended closure, send an `end_date`.
+
+```bash
+curl -X PATCH 'https://storerocket.io/api/v2/projects/PROJECT_ID/special-hours/RULE_ID' \
+  -H 'Authorization: Bearer YOUR_TOKEN' \
+  -H 'Accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{"hours": [{ "opens": "10:00", "closes": "15:00" }]}'
+```
+
+## Delete a rule
+
+`DELETE /api/v2/projects/{project_id}/special-hours/{rule_id}` returns `204`. The locations go back to their weekly hours on those dates.
+
+## Retrying safely
+
+`POST` and `PATCH` accept an `Idempotency-Key` header (up to 255 characters). A retry with the same key and the same body returns the first answer, with the header `Idempotent-Replayed: true`, and creates nothing new. The same key with a different body returns `409`. Keys are kept for 24 hours, per token user, project and endpoint. Validation errors are not remembered, so a corrected retry can reuse its key.
+
+## A location's resolved dates
+
+Add `?includeSpecialHours=1` to [get a location](/api/locations/get) or [list locations](/api/locations/list) to see the dates that apply to each location after every rule is resolved, for a rolling window from two days ago to about two months ahead. A dated entry that runs past the window keeps its real `end_date` (or `null` when it has none).
+
+```json
+"special_hours": {
+  "window": { "from": "2026-11-18", "to": "2027-01-20" },
+  "dates": [
+    { "name": "Thanksgiving", "start_date": "2026-11-26", "end_date": "2026-11-26", "hours": "closed", "note": null }
+  ]
+}
+```
+
+The field is read-only. Sending a location you read back in a `PUT` keeps working: `special_hours` is ignored there. Change dates through the rules above.
+
+## Errors
+
+Invalid input returns `422` with the field in `errors`, for example `{"message": "Choose at least one country.", "errors": {"applies_to": ["Choose at least one country."]}}`. A filter or location ID from another project is refused with `422`; a rule ID from another project returns `404`. See [errors](/api/errors).
