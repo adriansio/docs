@@ -9,6 +9,7 @@ Requires `location:read` and project API access. The location must belong to the
 <ParamField path="project_id" type="string" required>The public project ID.</ParamField>
 <ParamField path="location_id" type="string" required>The public location ID.</ParamField>
 <ParamField query="includeHours" type="number">Send `1` to include opening hours.</ParamField>
+<ParamField query="includeSpecialHours" type="number">Send `1` to include the [holiday and special hours](/api/special-hours#a-locations-resolved-dates) that apply to the location in the next two months. Read-only.</ParamField>
 <ParamField query="includeFilters" type="number">Send `1` to include filters.</ParamField>
 <ParamField query="includeFields" type="number">Send `1` to include custom fields.</ParamField>
 <ParamField query="includeCallsToAction" type="number">Send `1` to include calls to action.</ParamField>

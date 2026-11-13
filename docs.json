@@ -64,7 +64,8 @@
           "api/locations/create",
           "api/locations/update",
           "api/locations/put",
-          "api/locations/delete"
+          "api/locations/delete",
+          "api/special-hours"
         ]
       },
       {
