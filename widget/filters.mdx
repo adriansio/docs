@@ -97,30 +97,16 @@ StoreRocket.create({
 
 ---
 
-## Programmatic Control
+## Reading the Active Filters
 
-### Set Filters
-
-```js
-// Set specific filters
-widget.setFilters(['drive-through', 'open-24-hours']);
-
-// Clear all filters
-widget.setFilters([]);
-```
-
-### Toggle Filter
+Filters are switched on and off by visitors. Your page can read which ones are active:
 
 ```js
-widget.toggleFilter('drive-through');
+const { filters } = widget.getState();
+console.log(filters.active);
 ```
 
-### Get Active Filters
-
-```js
-const active = widget.getFilters();
-// ['drive-through', 'wheelchair-accessible']
-```
+To react when they change, listen to `filtersChange` (see Filter Events below).
 
 ---
 
@@ -133,106 +119,11 @@ StoreRocket.create({
   account: 'abc123',
   container: '#locator',
   on: {
-    filterSelect: (filter, activeFilters) => {
-      console.log(`Activated: ${filter.name}`);
-    },
-
-    filterDeselect: (filter, activeFilters) => {
-      console.log(`Deactivated: ${filter.name}`);
-    },
-
-    filterChange: (activeFilters, previousFilters) => {
-      // Track filter usage
-      analytics.track('filters_changed', {
-        filters: activeFilters.map(f => f.slug)
-      });
-    },
-
-    filterClear: (previousFilters) => {
-      console.log('All filters cleared');
+    filterChange: (activeFilters) => {
+      analytics.track('filters_changed', { filters: activeFilters });
     }
   }
 });
 ```
 
----
-
-## Filter Categories
-
-Group related filters into categories (configured in dashboard):
-
-```
-Services
-├── Drive-Through
-├── Pickup
-└── Delivery
-
-Amenities
-├── Wheelchair Accessible
-├── Parking
-└── WiFi
-```
-
-Categories display as collapsible sections in the filter panel.
-
----
-
-## Custom Filter UI
-
-Hide the built-in filter UI and create your own:
-
-```html
-<div class="my-filters">
-  <button data-filter="drive-through">Drive-Through</button>
-  <button data-filter="open-24-hours">24 Hours</button>
-</div>
-
-<div id="locator" style="height: 600px;"></div>
-
-<script>
-  const widget = await StoreRocket.create({
-    account: 'abc123',
-    container: '#locator',
-    features: {
-      filters: false  // Hide built-in filter UI
-    }
-  });
-
-  // Wire up custom buttons
-  document.querySelectorAll('[data-filter]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      widget.toggleFilter(btn.dataset.filter);
-      updateButtonStates();
-    });
-  });
-
-  function updateButtonStates() {
-    const active = widget.getFilters();
-    document.querySelectorAll('[data-filter]').forEach(btn => {
-      btn.classList.toggle('active', active.includes(btn.dataset.filter));
-    });
-  }
-</script>
-```
-
----
-
-## URL Sync
-
-With `urlSync` enabled, active filters persist in the URL:
-
-```
-https://example.com/locations?filters=drive-through,open-24-hours
-```
-
-Users can bookmark or share filtered views.
-
-```js
-StoreRocket.create({
-  account: 'abc123',
-  container: '#locator',
-  features: {
-    urlSync: true
-  }
-});
-```
+You can also listen after the widget started with `widget.on('filtersChange', handler)`, or with the browser event `storerocket:filter-change` (`event.detail.filters`).

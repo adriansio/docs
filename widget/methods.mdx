@@ -3,7 +3,7 @@ title: 'Methods'
 description: 'Control the widget programmatically'
 ---
 
-After initializing the widget, you can call methods to control it programmatically.
+After the widget starts, you can call methods on it from your own page. Add the install code from your StoreRocket dashboard to the page first; it defines the global `StoreRocket` object used below.
 
 ## Getting the Widget Instance
 
@@ -13,47 +13,46 @@ const widget = await StoreRocket.create({
   container: '#locator'
 });
 
-// Now you can call methods
 widget.search('New York');
 ```
+
+You can also fetch an instance that already started, for example one created from a `data-storerocket` element:
+
+```js
+const widget = StoreRocket.get('#locator'); // null if there is none
+```
+
+Other helpers on the global `StoreRocket` object: `StoreRocket.destroy(container)`, `StoreRocket.destroyAll()`, `StoreRocket.scan()`, `StoreRocket.watch()` and `StoreRocket.unwatch()`.
+
+<Note>
+  Only the methods on this page exist on a widget. Anything else (for example `setFilters` or `getVisibleLocations`) is not available and will throw `is not a function`.
+</Note>
 
 ---
 
-## Search Methods
+## Search
 
-### search(query, options?)
+### search(query, center?)
 
-Perform a search programmatically.
+Run a search. `query` is the text shown for the search (an address, zip code or city). `center` is the point to search around.
 
 ```js
-// Simple search
-widget.search('New York');
-
-// Search with options
-widget.search('90210', {
-  radius: 25,
-  unit: 'miles'
-});
-
-// Search from coordinates
-widget.search({ lat: 40.7128, lng: -74.0060 });
+widget.search('New York', { lat: 40.7128, lng: -74.0060 });
 ```
 
-<ParamField path="query" type="string | object">
-  Search query (address, zip code, city) or coordinates object.
+Returns a Promise that resolves when the results are ready and rejects if the search fails.
+
+<ParamField path="query" type="string">
+  The search text.
 </ParamField>
 
-<ParamField path="options.radius" type="number">
-  Override search radius.
-</ParamField>
-
-<ParamField path="options.unit" type="string">
-  Override distance unit (`miles` or `kilometers`).
+<ParamField path="center" type="{ lat: number, lng: number }">
+  The coordinates to search around.
 </ParamField>
 
 ### clearSearch()
 
-Clear the search input and reset results.
+Clear the search and reset the results.
 
 ```js
 widget.clearSearch();
@@ -61,182 +60,197 @@ widget.clearSearch();
 
 ---
 
-## Filter Methods
-
-### setFilters(filters)
-
-Set active filters programmatically.
-
-```js
-// Set specific filters
-widget.setFilters(['drive-through', 'open-24-hours']);
-
-// Clear all filters
-widget.setFilters([]);
-```
-
-<ParamField path="filters" type="string[]">
-  Array of filter slugs to activate.
-</ParamField>
-
-### getFilters()
-
-Get currently active filters.
-
-```js
-const activeFilters = widget.getFilters();
-// ['drive-through', 'wheelchair-accessible']
-```
-
-### toggleFilter(slug)
-
-Toggle a single filter on/off.
-
-```js
-widget.toggleFilter('drive-through');
-```
-
----
-
-## Location Methods
-
-### selectLocation(id)
-
-Select and show details for a specific location.
-
-```js
-// By location ID
-widget.selectLocation('abc123');
-
-// By slug
-widget.selectLocation('downtown-seattle');
-```
-
-### deselectLocation()
-
-Close the location detail panel.
-
-```js
-widget.deselectLocation();
-```
+## Locations
 
 ### getLocations()
 
-Get all loaded locations.
+Returns the locations the widget currently has loaded.
 
 ```js
 const locations = widget.getLocations();
-console.log(`Total locations: ${locations.length}`);
+console.log(`Loaded: ${locations.length}`);
 ```
 
-### getVisibleLocations()
+### selectLocation(id)
 
-Get locations currently visible on the map.
+Open a location, as if the visitor had clicked it. Returns a Promise.
 
 ```js
-const visible = widget.getVisibleLocations();
-console.log(`Visible: ${visible.length}`);
+widget.selectLocation('abc123');
+```
+
+<ParamField path="id" type="string">
+  The location ID. It must be one of the locations the widget has loaded.
+</ParamField>
+
+### getSelectedLocation()
+
+Returns the open location, or `null`.
+
+```js
+const selected = widget.getSelectedLocation();
+```
+
+### addLocation(data) and removeLocation(id)
+
+Add or remove a location in the widget on this page only. Nothing is saved to your StoreRocket account.
+
+```js
+widget.addLocation({ name: 'Pop-up shop', lat: 40.7128, lng: -74.0060 });
+widget.removeLocation('abc123');
 ```
 
 ---
 
-## Map Methods
+## State
 
-### setCenter(lat, lng, zoom?)
+### getState()
 
-Pan the map to coordinates.
+Returns the widget's current state. The filters the visitor has switched on are at `filters.active`.
+
+```js
+const { filters } = widget.getState();
+console.log(filters.active);
+```
+
+---
+
+## Map
+
+### setCenter(lat, lng)
+
+Move the map to a point.
 
 ```js
 widget.setCenter(40.7128, -74.0060);
-
-// With zoom level
-widget.setCenter(40.7128, -74.0060, 12);
 ```
 
-### fitBounds(locations?)
+### setZoom(zoom)
 
-Fit the map to show all locations (or specific ones).
+Set the map zoom level.
 
 ```js
-// Fit all locations
-widget.fitBounds();
-
-// Fit specific locations
-widget.fitBounds([location1, location2]);
+widget.setZoom(12);
 ```
 
-### getMap()
+### fitToLocations(locations, options?)
 
-Get the underlying map instance (Google Maps or Mapbox GL).
-
-```js
-const map = widget.getMap();
-
-// Check provider
-if (widget.getMapProvider() === 'google') {
-  // Google Maps API
-  map.setMapTypeId('satellite');
-} else {
-  // Mapbox GL JS
-  map.setStyle('mapbox://styles/mapbox/satellite-v9');
-}
-```
-
-### getMapProvider()
-
-Returns `'google'` or `'mapbox'`.
+Fit the map around a list of locations.
 
 ```js
-const provider = widget.getMapProvider();
+widget.fitToLocations(widget.getLocations());
 ```
 
 ---
 
-## Event Methods
+## Look
+
+### getTheme() and setTheme(slug)
+
+Read or change the theme. `setTheme` returns a Promise.
+
+```js
+widget.getTheme();          // 'aurora'
+await widget.setTheme('aurora');
+```
+
+### setDarkMode(enabled)
+
+```js
+widget.setDarkMode(true);
+```
+
+### setBrandColor(hue, saturation?)
+
+```js
+widget.setBrandColor(210, 91);
+```
+
+### setBorderRadius(preset)
+
+Set the corner rounding: `'sharp'`, `'rounded'` or `'pill'`.
+
+```js
+widget.setBorderRadius('pill');
+```
+
+---
+
+## Events
 
 ### on(event, handler)
 
-Subscribe to an event.
+Listen to an event. Returns a function that stops listening.
 
 ```js
-widget.on('locationSelect', (location) => {
+const stop = widget.on('select', (location) => {
   console.log('Selected:', location.name);
 });
+
+// Later
+stop();
 ```
 
 ### off(event, handler)
 
-Unsubscribe from an event.
+Stop listening to an event.
 
 ```js
 const handler = (location) => console.log(location);
+widget.on('select', handler);
+widget.off('select', handler);
+```
 
-widget.on('locationSelect', handler);
-// Later...
-widget.off('locationSelect', handler);
+### Available events
+
+| Event | Handler receives |
+|---|---|
+| `ready` | the widget |
+| `search` | `(query, results)` |
+| `select` | the location |
+| `filtersChange` | the list of active filters |
+| `error` | the error |
+| `analytics` | `{ event, timestamp, projectId, ... }` |
+
+The widget also fires browser events on its container element. They bubble, so you can listen on `document`:
+
+| Browser event | `event.detail` |
+|---|---|
+| `storerocket:ready` | `{ widget }` |
+| `storerocket:search` | `{ query, results, center }` |
+| `storerocket:location-view` | `{ location }` |
+| `storerocket:filter-change` | `{ filters }` |
+| `storerocket:radius-change` | `{ radius, unit }` |
+| `storerocket:units-change` | `{ unit }` |
+| `storerocket:show-all` | `{ count }` |
+
+```js
+document.addEventListener('storerocket:location-view', (e) => {
+  console.log('Viewed:', e.detail.location.name);
+});
 ```
 
 ---
 
-## Lifecycle Methods
+## Lifecycle
 
 ### destroy()
 
-Clean up and remove the widget.
+Remove the widget and clean up everything it added.
 
 ```js
 widget.destroy();
 ```
 
 <Warning>
-  After calling `destroy()`, the widget instance is no longer usable. Create a new one if needed.
+  After `destroy()` the instance is no longer usable. Create a new one if you need the widget again.
 </Warning>
 
 ---
 
 ## Example: External Search Form
 
-Control the widget from your own search form:
+Run searches from your own form:
 
 ```html
 <form id="store-search">
@@ -251,37 +265,31 @@ Control the widget from your own search form:
 
   StoreRocket.create({
     account: 'abc123',
-    container: '#locator',
-    features: { search: false } // Hide built-in search
+    container: '#locator'
   }).then(w => widget = w);
 
   document.getElementById('store-search').addEventListener('submit', (e) => {
     e.preventDefault();
-    const query = e.target.location.value;
-    widget.search(query);
+    widget.search(e.target.location.value);
   });
 </script>
 ```
 
-## Example: Filter Buttons
+## Example: Show a Counter
 
-Create custom filter buttons outside the widget:
+Show how many filters are active outside the widget:
 
 ```html
-<div class="filter-buttons">
-  <button data-filter="drive-through">Drive-Through</button>
-  <button data-filter="open-24-hours">24 Hours</button>
-  <button data-filter="wheelchair-accessible">Accessible</button>
-</div>
+<p>Active filters: <span id="filter-count">0</span></p>
+<div id="locator" style="height: 600px;"></div>
 
 <script>
-  document.querySelectorAll('[data-filter]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const filter = btn.dataset.filter;
-      widget.toggleFilter(filter);
-
-      // Update button state
-      btn.classList.toggle('active', widget.getFilters().includes(filter));
+  StoreRocket.create({
+    account: 'abc123',
+    container: '#locator'
+  }).then(widget => {
+    widget.on('filtersChange', (active) => {
+      document.getElementById('filter-count').textContent = active.length;
     });
   });
 </script>
