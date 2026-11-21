@@ -1,0 +1,105 @@
+---
+title: 'List leads'
+description: 'Read the request-form submissions of one store locator, newest first.'
+api: 'GET /api/v2/projects/{project_id}/leads'
+---
+
+A lead is a visitor who sent your store locator's request form. Requires `lead:read` and project API access. Returns a `data` array, newest first, with pagination `links` and `meta`.
+
+<ParamField path="project_id" type="string" required>The public project ID returned by [List projects](/api/projects).</ParamField>
+<ParamField query="page" type="number" default="1">Positive integer page number to retrieve.</ParamField>
+<ParamField query="limit" type="number" default="15">Integer page size from 1 to 100; other values use the default size.</ParamField>
+<ParamField query="per_page" type="number" default="15">Same as `limit`. When both are sent, `limit` is used.</ParamField>
+
+To pick up new leads, read the first page and keep the `id`s you have already handled: a lead's `id` never changes. A token made before 21 November 2026 needs **See leads** ticked on the API Tokens page.
+
+JavaScript examples run in Node.js 22 or later; PHP examples require PHP 8.2 or later with cURL. Both read `STOREROCKET_TOKEN` from your environment. See the [quickstart](/api/quickstart) for setup.
+
+<RequestExample>
+
+```bash cURL
+curl --get 'https://storerocket.io/api/v2/projects/PROJECT_ID/leads' \
+  -H 'Authorization: Bearer YOUR_TOKEN' \
+  -H 'Accept: application/json' \
+  --data-urlencode 'limit=50'
+```
+
+```javascript JavaScript
+const token = process.env.STOREROCKET_TOKEN;
+if (!token) throw new Error("Set STOREROCKET_TOKEN first.");
+const projectId = "PROJECT_ID";
+
+const url = new URL(`https://storerocket.io/api/v2/projects/${encodeURIComponent(projectId)}/leads`);
+url.searchParams.set("limit", "50");
+const response = await fetch(url, {
+  headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+  signal: AbortSignal.timeout(30_000),
+});
+
+const text = await response.text();
+if (!response.ok) throw new Error(`HTTP ${response.status}: ${text}`);
+console.log(JSON.parse(text));
+```
+
+```php PHP
+<?php
+
+$token = getenv("STOREROCKET_TOKEN") ?: throw new RuntimeException("Set STOREROCKET_TOKEN first.");
+$projectId = "PROJECT_ID";
+
+$url = 'https://storerocket.io/api/v2/projects/' . rawurlencode($projectId) . '/leads?' . http_build_query(['limit' => 50]);
+
+$curl = curl_init($url);
+curl_setopt_array($curl, [
+    CURLOPT_HTTPHEADER => ["Authorization: Bearer $token", "Accept: application/json"],
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_CONNECTTIMEOUT => 5,
+    CURLOPT_TIMEOUT => 30,
+]);
+
+$text = curl_exec($curl);
+$error = curl_error($curl);
+$status = (int) curl_getinfo($curl, CURLINFO_HTTP_CODE);
+curl_close($curl);
+
+if ($text === false) {
+    throw new RuntimeException("Request failed: $error");
+}
+if ($status < 200 || $status >= 300) {
+    throw new RuntimeException("HTTP $status: $text");
+}
+echo json_encode(json_decode($text, false, 512, JSON_THROW_ON_ERROR), JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR), PHP_EOL;
+```
+
+</RequestExample>
+
+## Response
+
+<ResponseExample>
+```json Example response
+{
+  "data": [
+    {
+      "id": "LEAD_ID",
+      "name": "Avery Lee",
+      "email": "avery@example.com",
+      "phone": "555-0142",
+      "comment": "Do you stock the 2 kg bag?",
+      "query": "Cambridge, MA",
+      "place": "Cambridge",
+      "country": "US",
+      "lat": 42.3736,
+      "lng": -71.1097,
+      "url": "https://example.com/stores",
+      "created_at": "2026-11-21T10:15:00+00:00"
+    }
+  ],
+  "links": {},
+  "meta": {}
+}
+```
+</ResponseExample>
+
+`query` is what the visitor searched for, `place` the place it found, and `url` the page of your website the form was sent from. Fields the form did not ask for are `null`.
+
+Errors: `401`, `403` (no API access on the plan, or the token lacks `lead:read`), `404`, `429`. See [errors](/api/errors). The older [v1 leads endpoint](/api/legacy-leads) keeps working for existing integrations.

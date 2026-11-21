@@ -1,0 +1,146 @@
+---
+title: 'Create or update by your own ID'
+description: 'Send a location with the ID your own system uses: the first time creates it, every later time updates it.'
+api: 'POST /api/v2/projects/{project_id}/locations/upsert'
+playground: 'simple'
+---
+
+Use this when your CRM, ERP, POS or spreadsheet has its own ID for each location and you do not want to store StoreRocket's ID. Send the same `reference` every time the record changes:
+
+- **A new `reference`** creates a location. `name` and `city` are required, as for [Create a location](/api/locations/create). The location is shown on the locator unless you send `"visible": false`. Returns `201`.
+- **A `reference` that already names a location** updates that location, like [PATCH](/api/locations/update): only the fields you send change, everything else stays as it is. Returns `200`.
+
+The same `reference` never creates a second location. Requires project API access, plus `location:create` for a new reference or `location:update` for a known one. The response is the [location resource](/api/locations/get#response-format) with its `reference`, and a [`geocoding`](/api/errors#the-geocoding-object) object next to `data`.
+
+<ParamField path="project_id" type="string" required>The public project ID.</ParamField>
+<ParamField body="reference" type="string" required>Your own ID for this location, up to 191 characters. Matched exactly: capital letters count, so `001Ab` and `001aB` are two locations. Each project has its own references.</ParamField>
+<ParamField body="name" type="string">Location name. Required when the reference is new.</ParamField>
+<ParamField body="city" type="string">City. Required when the reference is new.</ParamField>
+<ParamField body="address_line_1" type="string">Street address.</ParamField>
+<ParamField body="address_line_2" type="string">Additional address information.</ParamField>
+<ParamField body="state" type="string">State or region.</ParamField>
+<ParamField body="postcode" type="string">Postal code.</ParamField>
+<ParamField body="country" type="string">Country.</ParamField>
+<ParamField body="phone" type="string">Phone number.</ParamField>
+<ParamField body="email" type="string">Email address.</ParamField>
+<ParamField body="url" type="string">Website URL.</ParamField>
+<ParamField body="visible" type="boolean">Whether the location is shown. Omitted: a new location is shown, and an existing one keeps its visibility.</ParamField>
+<ParamField body="filters" type="string[]">Filter names. A name that does not exist yet is created.</ParamField>
+<ParamField body="fields" type="object">Named custom fields, such as `{"Manager":"Sam"}`.</ParamField>
+
+Every other [writable field](/api/locations/create#additional-fields) works too, with the same rules as Create (new reference) or PATCH (known reference).
+
+JavaScript examples run in Node.js 22 or later; PHP examples require PHP 8.2 or later with cURL. Both read `STOREROCKET_TOKEN` from your environment. See the [quickstart](/api/quickstart) for setup.
+
+<RequestExample>
+
+```bash cURL
+curl -X POST 'https://storerocket.io/api/v2/projects/PROJECT_ID/locations/upsert' \
+  -H 'Authorization: Bearer YOUR_TOKEN' \
+  -H 'Accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "reference":"CRM-0015g00000XyZ",
+    "name":"Downtown Store",
+    "city":"Seattle",
+    "phone":"555-0101",
+    "visible":false
+  }'
+```
+
+```javascript JavaScript
+const token = process.env.STOREROCKET_TOKEN;
+if (!token) throw new Error("Set STOREROCKET_TOKEN first.");
+const projectId = "PROJECT_ID";
+
+const url = new URL(`https://storerocket.io/api/v2/projects/${encodeURIComponent(projectId)}/locations/upsert`);
+const response = await fetch(url, {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${token}`,
+    Accept: "application/json",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    "reference": "CRM-0015g00000XyZ",
+    "name": "Downtown Store",
+    "city": "Seattle",
+    "phone": "555-0101",
+    "visible": false
+  }),
+  signal: AbortSignal.timeout(30_000),
+});
+
+const text = await response.text();
+if (!response.ok) throw new Error(`HTTP ${response.status}: ${text}`);
+console.log(response.status === 201 ? "Created" : "Updated", JSON.parse(text));
+```
+
+```php PHP
+<?php
+
+$token = getenv("STOREROCKET_TOKEN") ?: throw new RuntimeException("Set STOREROCKET_TOKEN first.");
+$projectId = "PROJECT_ID";
+
+$url = 'https://storerocket.io/api/v2/projects/' . rawurlencode($projectId) . '/locations/upsert';
+
+$curl = curl_init($url);
+curl_setopt_array($curl, [
+    CURLOPT_CUSTOMREQUEST => "POST",
+    CURLOPT_HTTPHEADER => [
+        "Authorization: Bearer $token",
+        "Accept: application/json",
+        "Content-Type: application/json",
+    ],
+    CURLOPT_POSTFIELDS => json_encode([
+        'reference' => 'CRM-0015g00000XyZ',
+        'name' => 'Downtown Store',
+        'city' => 'Seattle',
+        'phone' => '555-0101',
+        'visible' => false,
+    ], JSON_THROW_ON_ERROR),
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_CONNECTTIMEOUT => 5,
+    CURLOPT_TIMEOUT => 30,
+]);
+
+$text = curl_exec($curl);
+$error = curl_error($curl);
+$status = (int) curl_getinfo($curl, CURLINFO_HTTP_CODE);
+curl_close($curl);
+
+if ($text === false) {
+    throw new RuntimeException("Request failed: $error");
+}
+if ($status < 200 || $status >= 300) {
+    throw new RuntimeException("HTTP $status: $text");
+}
+echo ($status === 201 ? "Created" : "Updated"), PHP_EOL;
+echo json_encode(json_decode($text, false, 512, JSON_THROW_ON_ERROR), JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR), PHP_EOL;
+```
+
+</RequestExample>
+
+<ResponseExample>
+```json 201 Created
+{
+  "data": {
+    "id": "LOCATION_ID",
+    "reference": "CRM-0015g00000XyZ",
+    "name": "Downtown Store",
+    "city": "Seattle",
+    "phone": "555-0101",
+    "visible": false
+  },
+  "geocoding": {"status": "found", "match": "Seattle, WA, USA"}
+}
+```
+</ResponseExample>
+
+## Finding a location by your ID
+
+[List locations](/api/locations/list) with `?reference=CRM-0015g00000XyZ` returns that location, or an empty `data` array when no location carries it. Every location response includes `reference`, which is `null` for a location created another way.
+
+## Errors
+
+`401`, `403` (no API access on the plan, or the token lacks `location:create` or `location:update`), `404`, `422`, `429`. A refused request changes nothing. In the rare case that two requests send the same new reference at the same moment, one creates the location and the other returns `409`: send it again and it updates that location. See [errors](/api/errors).

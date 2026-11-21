@@ -1,0 +1,39 @@
+---
+title: 'Zapier'
+description: 'Connect StoreRocket to thousands of apps: keep locations in sync from your CRM and act on new leads.'
+---
+
+The StoreRocket Zapier app connects your store locator to your CRM, ERP, spreadsheet or helpdesk without code. It is available by invitation while in early access: ask us on live chat for the invite link.
+
+## Connect
+
+1. Create an API token on the [API Tokens page](https://storerocket.io/app/account/api-tokens). Tick **See locations**, **Add locations** and **Edit locations** for the location actions, and **See leads** for the New Lead trigger.
+2. In Zapier, add a StoreRocket step and paste the token when asked.
+3. Every step starts with **Store locator**: pick the locator to use.
+
+The Zapier app uses the [REST API](/api/introduction), so it is included on the plans that include the API.
+
+## Actions
+
+| Step | What it does |
+| --- | --- |
+| **Create or Update Location by Your Own ID** | Send your record's ID from the other app. The first time that ID arrives it creates the location; every time after, it updates the same location, changing only the fields you filled in. The same ID never makes a duplicate. See [Create or update by your own ID](/api/locations/upsert). |
+| **Create Location** | Always adds a new location. Name and city are required. |
+| **Update Location** | Changes a location by its StoreRocket ID (from a Find or Create step). Only the fields you fill in change. |
+
+Each action takes the name, address lines, city, state, postcode, country, phone, email, website, filters, custom fields by name, and whether the location is shown. StoreRocket places the pin from the address, as for any new location.
+
+## Search
+
+**Find Location** finds a location by your own ID, or by its exact name when the ID is empty.
+
+## Trigger
+
+**New Lead** starts a Zap when a visitor sends your store locator's request form: their name, email, phone, message, what they searched for and the page they sent it from. Use it to add the lead to your CRM, email the nearest store or post it to a team channel. See [List leads](/api/leads).
+
+## Good to know
+
+- Empty fields in a Zap are never sent, so a sync never clears a value you set in StoreRocket.
+- A location you hide in StoreRocket stays hidden when the same ID is sent again, unless the Zap sets **Show on the locator**.
+- Your own IDs are matched exactly: capital letters count.
+- If a step says the token is missing a permission, edit the token on the API Tokens page and tick it.
