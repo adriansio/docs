@@ -1,16 +1,5 @@
-# widget/methods, events and filters are published (checked against production widget code); the other widget pages are unaudited drafts.
 # Keep unshipped Phoenix reference drafts out of this current API release.
-widget/callbacks.mdx
-widget/custom-markers.mdx
-widget/installation.mdx
-widget/introduction.mdx
-widget/localization.mdx
-widget/options.mdx
-widget/popup.mdx
-widget/quick-start.mdx
-widget/search-box.mdx
-widget/spa-integration.mdx
-widget/styling.mdx
+widget/
 api/filters/
 api/analytics/
 images/
