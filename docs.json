@@ -69,6 +69,14 @@
         ]
       },
       {
+        "group": "Widget JavaScript API",
+        "pages": [
+          "widget/methods",
+          "widget/events",
+          "widget/filters"
+        ]
+      },
+      {
         "group": "Existing integrations",
         "pages": [
           "api/legacy",
