@@ -82,9 +82,10 @@ JavaScript examples run in Node.js 22 or later; PHP examples require PHP 8.2 or 
 | Permission | Methods |
 | --- | --- |
 | `location:read` | GET location list and GET one location |
-| `location:create` | POST location |
-| `location:update` | PATCH and PUT location |
+| `location:create` | POST location; [create or update by your own ID](/api/locations/upsert) when the ID is new |
+| `location:update` | PATCH and PUT location; [create or update by your own ID](/api/locations/upsert) when the ID already names a location |
 | `location:delete` | DELETE location |
+| `lead:read` | GET [leads](/api/leads) (shown as **See leads**) |
 | `analytics:read` | Analytics tools of the [MCP server](/api/mcp) only; no REST endpoint uses it |
 
 Select the permissions your integration needs when creating its token. Revoke an unused or compromised token from the same API Tokens page.

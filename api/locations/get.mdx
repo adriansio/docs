@@ -104,6 +104,7 @@ Successful reads and writes return `200` with a `data` object. The example below
 {
   "data": {
     "id": "LOCATION_ID",
+    "reference": null,
     "name": "Downtown Store",
     "address": "123 Main St, Seattle, WA 98101",
     "city": "Seattle",
@@ -133,7 +134,7 @@ Successful reads and writes return `200` with a `data` object. The example below
 ```
 </ResponseExample>
 
-The full resource also includes `slug`, `visible`, `display_address`, address components, `timezone`, `email`, `url`, and social fields. `location_type` is a name or null; marker IDs are integers or null. Read `cover_image_url` for the cover, and send `cover` when writing it.
+`reference` is your own ID for the location, set by [Create or update by your own ID](/api/locations/upsert), or `null`. The full resource also includes `slug`, `visible`, `display_address`, address components, `timezone`, `email`, `url`, and social fields. `location_type` is a name or null; marker IDs are integers or null. Read `cover_image_url` for the cover, and send `cover` when writing it.
 
 `hours`, `filters`, `fields`, and `callsToAction` are included on GET only when requested with their include flags. No schedule returns `hours: null`. A write response includes these relationships automatically.
 

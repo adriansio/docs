@@ -46,7 +46,8 @@
       {
         "group": "Integration guides",
         "pages": [
-          "api/sync-locations"
+          "api/sync-locations",
+          "api/zapier"
         ]
       },
       {
@@ -64,8 +65,15 @@
           "api/locations/create",
           "api/locations/update",
           "api/locations/put",
+          "api/locations/upsert",
           "api/locations/delete",
           "api/special-hours"
+        ]
+      },
+      {
+        "group": "Leads",
+        "pages": [
+          "api/leads"
         ]
       },
       {
