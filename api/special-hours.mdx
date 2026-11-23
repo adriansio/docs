@@ -21,6 +21,7 @@ Reading needs `location:read`; creating, changing and deleting need `location:up
   "hours": "closed",
   "repeats_yearly": true,
   "note": null,
+  "reference": null,
   "applies_to": { "type": "countries", "values": ["US"] },
   "source": "api",
   "created_at": "2026-11-13T10:00:00+00:00",
@@ -28,7 +29,7 @@ Reading needs `location:read`; creating, changing and deleting need `location:up
 }
 ```
 
-<ResponseField name="name" type="string">What visitors see beside the date, at most 120 characters.</ResponseField>
+<ResponseField name="name" type="string">What visitors see beside the date, at most 120 characters. Write it for shoppers ("Closed", "Thanksgiving"); keep your own IDs in `reference`.</ResponseField>
 <ResponseField name="start_date" type="string">First date, `YYYY-MM-DD`, in each location's local calendar.</ResponseField>
 <ResponseField name="end_date" type="string | null">Last date, inclusive. Equal to `start_date` for one day. `null` only when `until_further_notice` is `true`.</ResponseField>
 <ResponseField name="hours" type="string | array">`"closed"`, `"regular"` (the location's normal weekly hours on those dates), `"open_24_hours"`, or up to six ranges `[{"opens": "09:00", "closes": "14:00"}]`. A range that closes earlier than it opens runs past midnight into the next date (`{"opens": "20:00", "closes": "02:00"}`).</ResponseField>
@@ -37,6 +38,7 @@ Reading needs `location:read`; creating, changing and deleting need `location:up
 <ResponseField name="holiday_region" type="string | null">Where a repeating holiday's date is read, as a country or country and region code (`AU-QLD`). Needed only when the holiday falls on different dates in different regions and the rule does not target that one region: Queensland's King's Birthday is in October, the rest of Australia's in June. `null` uses the rule's own region, if it targets one.</ResponseField>
 <ResponseField name="repeats_yearly" type="boolean">When `true`, the rule follows its holiday to its date every year (Thanksgiving 2027 is 25 November). Only a single day with a yearly `holiday_key` can repeat; an observed weekday or a one-time holiday cannot.</ResponseField>
 <ResponseField name="note" type="string | null">An optional line for visitors, at most 255 characters.</ResponseField>
+<ResponseField name="reference" type="string | null">Your own ID for the rule, at most 120 characters, such as the closure's ID in the system you sync from. Never shown to visitors. Find a rule by it with `GET ...?reference=`. A `PATCH` that leaves it out keeps it; `null` clears it.</ResponseField>
 
 ### Which rule wins
 
@@ -50,6 +52,14 @@ A `countries` rule matches the location's country however it was typed (`US`, `U
 
 ```bash
 curl 'https://storerocket.io/api/v2/projects/PROJECT_ID/special-hours' \
+  -H 'Authorization: Bearer YOUR_TOKEN' \
+  -H 'Accept: application/json'
+```
+
+Add `?reference=YOUR_ID` to find the rules you saved with that `reference` (an exact match):
+
+```bash
+curl 'https://storerocket.io/api/v2/projects/PROJECT_ID/special-hours?reference=erp-closure-1108909-2026-11-28' \
   -H 'Authorization: Bearer YOUR_TOKEN' \
   -H 'Accept: application/json'
 ```
@@ -93,9 +103,27 @@ curl -X POST 'https://storerocket.io/api/v2/projects/PROJECT_ID/special-hours' \
   }'
 ```
 
+A closure synced from another system keeps that system's ID in `reference`, and a name shoppers can read:
+
+```bash
+curl -X POST 'https://storerocket.io/api/v2/projects/PROJECT_ID/special-hours' \
+  -H 'Authorization: Bearer YOUR_TOKEN' \
+  -H 'Accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "name": "Closed",
+    "reference": "erp-closure-1108909-2026-11-28",
+    "start_date": "2026-11-28",
+    "hours": "closed",
+    "applies_to": { "type": "locations", "values": ["LOCATION_ID"] }
+  }'
+```
+
+On the next sync, find it with `?reference=` and `PATCH` it by its `id`, or create it when nothing comes back.
+
 ## Change a rule
 
-`PATCH /api/v2/projects/{project_id}/special-hours/{rule_id}` changes only the fields you send; everything else keeps its saved value. `applies_to` is replaced as a whole when sent. Sending an empty `values` list for anything but `all` is refused with `422`: clearing the locations never turns a rule into an account-wide one. To end an open-ended closure, send an `end_date`.
+`PATCH /api/v2/projects/{project_id}/special-hours/{rule_id}` changes only the fields you send; everything else keeps its saved value, `reference` included (send `"reference": null` to clear it). `applies_to` is replaced as a whole when sent. Sending an empty `values` list for anything but `all` is refused with `422`: clearing the locations never turns a rule into an account-wide one. To end an open-ended closure, send an `end_date`.
 
 ```bash
 curl -X PATCH 'https://storerocket.io/api/v2/projects/PROJECT_ID/special-hours/RULE_ID' \
