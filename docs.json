@@ -46,7 +46,8 @@
       {
         "group": "Integration guides",
         "pages": [
-          "api/sync-locations"
+          "api/sync-locations",
+          "widget/select-this-location"
         ]
       },
       {

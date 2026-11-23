@@ -1,0 +1,94 @@
+---
+title: "Select this location"
+description: "A button that picks a location for your page instead of opening a link, with the event your code listens for."
+---
+
+A **Select this location** button lets a visitor pick one of your locations without leaving your page. Use it for a
+checkout that asks "which store will you collect from?", a booking form, or a "set my store" picker.
+
+When a visitor presses it:
+
+- the button reads **Selected** (the word is editable on the Languages page, in every language your locator has),
+- your page receives the `storerocket-storelocator-select` event with the location,
+- nothing opens and the page does not navigate.
+
+## Add the button
+
+1. In the dashboard, open **Calls to Action** and press **New call to action**.
+2. Type the button's words, for example `Select studio`.
+3. Under **When pressed**, choose **Selects the location**.
+4. Leave **On every location** on, and press **Create call to action**.
+
+The button shows on cards, map popups and the opened location on the new store locator engine, in every theme.
+
+## Listen for the choice
+
+```html
+<script>
+  document.addEventListener('storerocket-storelocator-select', function (event) {
+    var location = event.detail.location;
+    // location.id is the location's ID, the same one the dashboard and the API use.
+    document.querySelector('#pickup-store').value = location.id;
+    document.querySelector('#pickup-store-name').textContent = location.name;
+  });
+</script>
+```
+
+The event is sent from the locator's element (`#storerocket-widget`) and bubbles, so a listener on `document` hears it.
+With two locators on one page, `event.target` tells you which one.
+
+### `event.detail`
+
+| Field | Type | What it is |
+| --- | --- | --- |
+| `location` | object | The location (below). |
+| `location_id` | string | The location's ID. |
+| `location_name` | string \| null | Its name. |
+| `preselected` | boolean | `true` when your page chose it (see below), `false` for a visitor's press or a call from your code. |
+| `source` | string | `button` (a visitor pressed it), `page` (preselected), or `api` (`chooseLocation()`). |
+
+### `event.detail.location`
+
+| Field | Type |
+| --- | --- |
+| `id` | string |
+| `name`, `address`, `address_line_1`, `address_line_2`, `city`, `state`, `postcode`, `country` | string \| null |
+| `lat`, `lng` | number \| null |
+| `phone`, `email`, `website`, `timezone` | string \| null |
+| `fields` | object: your custom fields by name, for example `{"Parking": "Free"}` |
+| `filters` | array of strings: the location's filter names |
+
+A press is also counted as a normal button click: it reaches your analytics as `storerocket-storelocator-click` with
+`cta_type: "select"`, and Google Analytics as `storerocket_click`.
+
+## Start with a location already selected
+
+If your page already knows the visitor's location (a checkout reopened, a saved preference), put its ID on the embed:
+
+```html
+<div id="storerocket-widget" data-storerocket-id="YOUR_ACCOUNT_ID" data-storerocket-selected="LOCATION_ID"></div>
+```
+
+When the locator loads, that location's button reads Selected and your page receives `storerocket-storelocator-select`
+with `preselected: true`. If no visible location has that ID, it sends `storerocket-storelocator-select-not-found` with
+`event.detail.id` instead. To also open the map on it, add `data-storerocket-location="LOCATION_ID"`.
+
+The Install page's builder offers this as **Already selected** once your account has a Select this location button.
+
+## Choose from your own code
+
+```js
+var locator = StoreRocket.get('#storerocket-widget');
+locator.chooseLocation('LOCATION_ID');   // the same as pressing that location's Select button
+locator.getChosenLocation();             // the location last chosen, or null
+```
+
+`chooseLocation()` returns a promise with the event's `detail`, or `null` when the ID is not on the locator. The
+locator's element also carries the current choice as `data-sr-chosen`.
+
+## Good to know
+
+- The choice lasts while the page is open. Pressing another location's button moves it; pressing the chosen one again
+  sends the event again.
+- The button needs the new store locator engine. On the older engine it is not shown.
+- StoreRocket never runs code from your account: your page listens, the locator only tells it.
