@@ -225,6 +225,21 @@ widget.on('locationSelect', (location) => {
   ```
 </ParamField>
 
+<ParamField path="on.locationPick" type="(location, detail) => void">
+  A visitor pressed a [Pick this location](/widget/pick-this-location) button, or your page or code picked one. Not the
+  same as `locationSelect`, which fires when a location is opened. `location` is `null` when the ID is not on the
+  locator (`detail.reason` is `not_found`).
+
+  ```js
+  on: {
+    locationPick: (location, detail) => {
+      // detail.source = 'button' | 'page' | 'code'
+      if (location) document.querySelector('#pickup-store').value = location.id;
+    }
+  }
+  ```
+</ParamField>
+
 <ParamField path="on.locationDeselect" type="(location, source) => void">
   Location detail panel closed.
 </ParamField>

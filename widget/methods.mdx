@@ -120,6 +120,25 @@ Close the location detail panel.
 widget.deselectLocation();
 ```
 
+### pickLocation(id)
+
+Hand a location to your page, the same as a visitor pressing its [Pick this location](/widget/pick-this-location)
+button: it reads Selected and your page receives `storerocket-storelocator-location-pick`. Not the same as
+`selectLocation()`, which opens a location. Returns a promise with the event's detail, or `null` for an ID the locator
+does not have.
+
+```js
+await widget.pickLocation('abc123');
+```
+
+### getPickedLocation()
+
+The location picked last, or `null`.
+
+```js
+const picked = widget.getPickedLocation();
+```
+
 ### getLocations()
 
 Get all loaded locations.
