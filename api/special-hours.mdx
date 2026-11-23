@@ -38,7 +38,7 @@ Reading needs `location:read`; creating, changing and deleting need `location:up
 <ResponseField name="holiday_region" type="string | null">Where a repeating holiday's date is read, as a country or country and region code (`AU-QLD`). Needed only when the holiday falls on different dates in different regions and the rule does not target that one region: Queensland's King's Birthday is in October, the rest of Australia's in June. `null` uses the rule's own region, if it targets one.</ResponseField>
 <ResponseField name="repeats_yearly" type="boolean">When `true`, the rule follows its holiday to its date every year (Thanksgiving 2027 is 25 November). Only a single day with a yearly `holiday_key` can repeat; an observed weekday or a one-time holiday cannot.</ResponseField>
 <ResponseField name="note" type="string | null">An optional line for visitors, at most 255 characters.</ResponseField>
-<ResponseField name="reference" type="string | null">Your own ID for the rule, at most 120 characters, such as the closure's ID in the system you sync from. Never shown to visitors. Find a rule by it with `GET ...?reference=`. A `PATCH` that leaves it out keeps it; `null` clears it.</ResponseField>
+<ResponseField name="reference" type="string | null">Your own ID for the rule, at most 120 characters, such as the closure's ID in the system you sync from. Never shown to visitors. One rule per `reference` in a project, compared exactly (`Ab1` and `aB1` are two different IDs). Find a rule by it with `GET ...?reference=`, or [create or update it by it](#create-or-update-by-your-own-id) in one call. A `PATCH` that leaves it out keeps it; `null` clears it.</ResponseField>
 
 ### Which rule wins
 
@@ -119,7 +119,43 @@ curl -X POST 'https://storerocket.io/api/v2/projects/PROJECT_ID/special-hours' \
   }'
 ```
 
-On the next sync, find it with `?reference=` and `PATCH` it by its `id`, or create it when nothing comes back.
+To keep it in step on every sync, send it to the [upsert endpoint](#create-or-update-by-your-own-id) instead: one call creates it the first time and updates it after that.
+
+## Create or update by your own ID
+
+`POST /api/v2/projects/{project_id}/special-hours/upsert` finds the rule with the `reference` you send. When there is none, it creates the rule and returns `201`. When there is one, it changes that rule and returns `200`: like `PATCH`, only the fields you send change, and everything else keeps its saved value. Sending the same closure on every sync never makes a second rule, so your sync does not need to remember our rule IDs.
+
+`reference` is required here. A new rule needs everything a [new rule](#create-a-rule) needs (`name`, `start_date`, `hours`, `applies_to`); an update can send only what changed.
+
+```bash
+curl -X POST 'https://storerocket.io/api/v2/projects/PROJECT_ID/special-hours/upsert' \
+  -H 'Authorization: Bearer YOUR_TOKEN' \
+  -H 'Accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "reference": "erp-closure-1108909-2026-11-28",
+    "name": "Geschlossen",
+    "start_date": "2026-11-28",
+    "hours": "closed",
+    "applies_to": { "type": "locations", "values": ["LOCATION_ID"] }
+  }'
+```
+
+Later the branch decides to open from 8:00 to 13:00 that day instead. The same call with only what changed updates the same rule:
+
+```bash
+curl -X POST 'https://storerocket.io/api/v2/projects/PROJECT_ID/special-hours/upsert' \
+  -H 'Authorization: Bearer YOUR_TOKEN' \
+  -H 'Accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "reference": "erp-closure-1108909-2026-11-28",
+    "name": "Kurz geöffnet",
+    "hours": [{ "opens": "08:00", "closes": "13:00" }]
+  }'
+```
+
+If two requests with the same new `reference` arrive at the same moment, one creates the rule and the other returns `409`: send it again and it updates the rule the first one made. The endpoint accepts an `Idempotency-Key` like `POST` and `PATCH` (see [Retrying safely](#retrying-safely)), and needs `location:update`.
 
 ## Change a rule
 
@@ -139,7 +175,7 @@ curl -X PATCH 'https://storerocket.io/api/v2/projects/PROJECT_ID/special-hours/R
 
 ## Retrying safely
 
-`POST` and `PATCH` accept an `Idempotency-Key` header (up to 255 characters). A retry with the same key and the same body returns the first answer, with the header `Idempotent-Replayed: true`, and creates nothing new. The same key with a different body returns `409`. Keys are kept for 24 hours, per token user, project and endpoint. Validation errors are not remembered, so a corrected retry can reuse its key.
+`POST`, `PATCH` and the upsert accept an `Idempotency-Key` header (up to 255 characters). A retry with the same key and the same body returns the first answer, with the header `Idempotent-Replayed: true`, and creates nothing new. The same key with a different body returns `409`. Keys are kept for 24 hours, per token user, project and endpoint. Validation errors are not remembered, so a corrected retry can reuse its key.
 
 ## A location's resolved dates
 
@@ -157,5 +193,7 @@ Add `?includeSpecialHours=1` to [get a location](/api/locations/get) or [list lo
 The field is read-only. Sending a location you read back in a `PUT` keeps working: `special_hours` is ignored there. Change dates through the rules above.
 
 ## Errors
+
+A `reference` that another rule in the project already holds returns `409` with `reference` in `errors`, on `POST` and `PATCH` alike: update that rule instead (find it with `?reference=`, or use the [upsert endpoint](#create-or-update-by-your-own-id)).
 
 Invalid input returns `422` with the field in `errors`, for example `{"message": "Choose at least one country.", "errors": {"applies_to": ["Choose at least one country."]}}`. A filter or location ID from another project is refused with `422`; a rule ID from another project returns `404`. See [errors](/api/errors).
