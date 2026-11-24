@@ -1,5 +1,7 @@
 # Keep unshipped Phoenix reference drafts out of this current API release.
-widget/
+# The widget pages stay out except the CTA click guide (shipped 24.11.2026, linked from "Integration guides").
+widget/*
+!widget/cta-click.mdx
 api/filters/
 api/analytics/
 images/
