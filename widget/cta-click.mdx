@@ -1,0 +1,149 @@
+---
+title: "Calls to action that tell your website"
+description: "Every call to action click tells your page which button and which location, and a button can skip the link entirely."
+---
+
+Every time a visitor clicks one of your calls to action, your page hears **`storerocket-storelocator-cta-click`** with
+the location and which button it was. A button set to **Tells your website** opens no link at all: what happens next is
+up to your page. A checkout that asks "which store will you collect from?", a delivery store beside a pickup store, a
+quote form, a list of studios to compare.
+
+You can have as many of these buttons as you like. Each one works on its own: clicking **Deliver from here** never
+changes **Pickup here**.
+
+## Add a button
+
+1. In the dashboard, open **Calls to Action** and press **New call to action**.
+2. Type the button's words, for example `Pickup here`. Visitors see your words.
+3. Under **What a click does**, choose **Tells your website**.
+4. Under **After a click**, choose what the button shows:
+   - **Selected on one location**: it reads "Selected" there; a click on another location moves it.
+   - **Selected on several**: each click adds or removes that location, like a list to compare.
+   - **No change**: the button stays as it is (a quote form, a chat).
+5. **Name in your website's code** is filled in from the words when you save, for example `pickup-here`. Your code
+   uses this name. Rewording or translating the button never changes it.
+
+The button shows on cards, map popups and the opened location on the new store locator engine, in every theme.
+
+## Listen for clicks
+
+One listener hears every call to action, link buttons included. `cta.key` says which one.
+
+```html
+<script>
+  document.addEventListener('storerocket-storelocator-cta-click', function (event) {
+    var cta = event.detail.cta;
+    var location = event.detail.location;
+    if (cta.key === 'pickup-here') setPickupStore(location);          // on for one
+    if (cta.key === 'deliver') setDeliveryStore(location);            // on for one, its own
+    if (cta.key === 'get-a-quote') openQuoteForm(location);           // no change
+    if (cta.key === 'compare') updateCompare(cta.pressed_ids);        // on for several
+    if (cta.key === 'book-a-class') {                                 // a link button
+      event.preventDefault();                                         // keep the visitor here
+      openBookingFor(location);
+    }
+  });
+</script>
+```
+
+The event is sent from the locator's element (`#storerocket-widget`) and bubbles, so a listener on `document` hears it.
+With two locators on one page, `event.target` tells you which one.
+
+On a link button, `event.preventDefault()` stops the link from opening, so your page can do something else with the
+click. A "Tells your website" button never opens anything.
+
+A locator made in code hears the same click as an instance event. The third argument is the page event, so
+`preventDefault()` works there too:
+
+```js
+locator.on('ctaClick', (location, cta, event) => {
+  if (cta.key === 'pickup-here') setPickupStore(location);
+});
+```
+
+### `event.detail`
+
+| Field | Type | What it is |
+| --- | --- | --- |
+| `cta` | object | The button that was clicked (below). |
+| `location` | [Location](#the-location-object) | The location the button is on. |
+| `location_id` | string | The location's ID. |
+| `location_name` | string \| null | Its name. |
+
+### `event.detail.cta`
+
+| Field | Type | What it is |
+| --- | --- | --- |
+| `key` | string | Its name in your website's code, like `pickup-here`. The same in every language. |
+| `id` | string | The button's ID, the one your Google Analytics reports show as `cta_id`. |
+| `label` | string \| null | The words the visitor read. |
+| `type` | string | `event` (Tells your website) or `url` (opens a link). |
+| `toggle` | string \| null | `one`, `many` or `none` for a Tells your website button; `null` for a link. |
+| `pressed` | boolean \| null | Whether it is on for this location after the click. `null` when it never stays on. |
+| `pressed_ids` | array of strings | Every location this button is on now, oldest first. Empty when it never stays on. |
+
+### The Location object
+
+The location every new call-to-action surface hands your page (`event.detail.location`, `setPressed()`,
+`getPressed()`). Only these fields, so nothing private ever reaches your page.
+
+| Field | Type |
+| --- | --- |
+| `id` | string: the location's ID, the same one the dashboard and the API use |
+| `name`, `address`, `address_line_1`, `address_line_2`, `city`, `state`, `postcode`, `country` | string \| null |
+| `lat`, `lng` | number \| null |
+| `phone`, `email`, `website`, `timezone` | string \| null |
+| `fields` | object: your custom fields by name, for example `{"Parking": "Free"}` |
+| `filters` | array of strings: the location's filter names |
+
+A click is also counted as a normal button click: it reaches your analytics as `storerocket-storelocator-click` with
+`cta_type: "event"` for a Tells your website button, and Google Analytics as `storerocket_click`.
+
+## Start with buttons already on
+
+If your page already knows the visitor's choices (a checkout reopened, a saved "my store"), put them on the embed as
+`key:ID` pairs. Several IDs for one button are separated by commas:
+
+```html
+<div id="storerocket-widget" data-storerocket-id="YOUR_ACCOUNT_ID"
+     data-storerocket-pressed="pickup-here:LOCATION_ID compare:ID_2,ID_3"></div>
+```
+
+A bare ID (`data-storerocket-pressed="LOCATION_ID"`) belongs to your **oldest** Tells your website button, so adding a
+second button later never changes what this code does. No event fires for it: your page already knows.
+
+The attribute is read once, when the locator starts. To change it afterwards, use `setPressed()`. An ID no visible
+location has (a typo, a location since deleted or hidden) is left out, with a warning in the browser console.
+
+The Install page's builder offers this as **Starts selected** once your account has such a button.
+
+## From your own code
+
+```js
+const locator = window.StoreRocket?.get?.(document.getElementById('storerocket-widget'));
+
+await locator?.setPressed('pickup-here', 'LOCATION_ID');     // on, resolves to the Location, or null
+await locator?.setPressed('compare', 'LOCATION_ID', false);   // off
+locator?.getPressed('compare');                               // [Location, Location], oldest first
+```
+
+The key may be left out: it then means your oldest Tells your website button. `setPressed()` sends no event, like
+setting a form field's value fires no `change`. When it does nothing (an unknown key or ID, a locator on the older
+engine, one not loaded yet), it resolves to `null` and says why in the browser console. The `?.` keeps a page quiet on
+a locator that has no such method.
+
+To read the state once the locator has loaded, for example to forget a saved location that is gone:
+
+```js
+document.addEventListener('storerocket-storelocator-load', () => setTimeout(() => {
+  const locator = window.StoreRocket?.get?.(document.getElementById('storerocket-widget'));
+  if (locator?.getPressed && !locator.getPressed('pickup-here').length) forgetMyStore();
+}));
+```
+
+## Good to know
+
+- The state lasts while the page is open. Remembering it across visits is your page's job: save the IDs, then put them
+  back with `data-storerocket-pressed`.
+- These buttons need the new store locator engine. On the older engine they are not shown.
+- StoreRocket never runs code from your account: your page listens, the locator only tells it.

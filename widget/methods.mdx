@@ -120,6 +120,25 @@ Close the location detail panel.
 widget.deselectLocation();
 ```
 
+### setPressed(key, id, pressed = true)
+
+Turn one of your [Tells your website](/widget/cta-click) buttons on or off for a location. No event fires. Resolves to
+[the Location object](/widget/cta-click#the-location-object), or `null` (an unknown key or ID, or a locator without
+these buttons), with the reason in the browser console. `key` may be left out for your oldest such button.
+
+```js
+await widget.setPressed('pickup-here', 'abc123');
+await widget.setPressed('compare', 'abc123', false);
+```
+
+### getPressed(key)
+
+The locations a Tells your website button is on, oldest first.
+
+```js
+const compared = widget.getPressed('compare');
+```
+
 ### getLocations()
 
 Get all loaded locations.
