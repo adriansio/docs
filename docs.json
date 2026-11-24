@@ -47,7 +47,7 @@
         "group": "Integration guides",
         "pages": [
           "api/sync-locations",
-          "widget/pick-this-location"
+          "widget/cta-click"
         ]
       },
       {

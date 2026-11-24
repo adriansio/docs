@@ -120,23 +120,23 @@ Close the location detail panel.
 widget.deselectLocation();
 ```
 
-### pickLocation(id)
+### setPressed(key, id, pressed = true)
 
-Hand a location to your page, the same as a visitor pressing its [Pick this location](/widget/pick-this-location)
-button: it reads Selected and your page receives `storerocket-storelocator-location-pick`. Not the same as
-`selectLocation()`, which opens a location. Returns a promise with the event's detail, or `null` for an ID the locator
-does not have.
+Turn one of your [Tells your website](/widget/cta-click) buttons on or off for a location. No event fires. Resolves to
+[the Location object](/widget/cta-click#the-location-object), or `null` (an unknown key or ID, or a locator without
+these buttons), with the reason in the browser console. `key` may be left out for your oldest such button.
 
 ```js
-await widget.pickLocation('abc123');
+await widget.setPressed('pickup-here', 'abc123');
+await widget.setPressed('compare', 'abc123', false);
 ```
 
-### getPickedLocation()
+### getPressed(key)
 
-The location picked last, or `null`.
+The locations a Tells your website button is on, oldest first.
 
 ```js
-const picked = widget.getPickedLocation();
+const compared = widget.getPressed('compare');
 ```
 
 ### getLocations()

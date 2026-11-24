@@ -49,12 +49,13 @@ widget.on('locationSelect', (location) => {
   Widget starting to initialize.
 </ParamField>
 
-<ParamField path="on.ready" type="(widget) => void">
-  Widget fully loaded and rendered. The `widget` instance is passed.
+<ParamField path="on.ready" type="(widget, locator) => void">
+  Widget fully loaded and rendered. The `widget` instance is passed, then `locator`, the same object
+  `StoreRocket.get()` returns (with methods like [`setPressed()`](/widget/cta-click#from-your-own-code)).
 
   ```js
   on: {
-    ready: (widget) => {
+    ready: (widget, locator) => {
       console.log('Widget ready, locations loaded');
       // widget.search('New York');
     }
@@ -225,21 +226,6 @@ widget.on('locationSelect', (location) => {
   ```
 </ParamField>
 
-<ParamField path="on.locationPick" type="(location, detail) => void">
-  A visitor pressed a [Pick this location](/widget/pick-this-location) button, or your page or code picked one. Not the
-  same as `locationSelect`, which fires when a location is opened. `location` is `null` when the ID is not on the
-  locator (`detail.reason` is `not_found`).
-
-  ```js
-  on: {
-    locationPick: (location, detail) => {
-      // detail.source = 'button' | 'page' | 'code'
-      if (location) document.querySelector('#pickup-store').value = location.id;
-    }
-  }
-  ```
-</ParamField>
-
 <ParamField path="on.locationDeselect" type="(location, source) => void">
   Location detail panel closed.
 </ParamField>
@@ -343,14 +329,16 @@ widget.on('locationSelect', (location) => {
   Email link clicked.
 </ParamField>
 
-<ParamField path="on.ctaClick" type="(location, cta) => void">
-  Custom CTA button clicked.
+<ParamField path="on.ctaClick" type="(location, cta, event) => void">
+  A visitor clicked one of your [calls to action](/widget/cta-click). `cta.key` names which one, the same in every
+  language. `location` is [the Location object](/widget/cta-click#the-location-object). On a link button,
+  `event.preventDefault()` stops the link. The page hears the same click as `storerocket-storelocator-cta-click`.
 
   ```js
   on: {
-    ctaClick: (location, cta) => {
-      if (cta.type === 'book') {
-        // Open booking modal
+    ctaClick: (location, cta, event) => {
+      if (cta.key === 'book-a-visit') {
+        event.preventDefault(); // keep the visitor here
         openBookingFor(location);
       }
     }
