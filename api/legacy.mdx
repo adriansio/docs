@@ -36,22 +36,22 @@ V1 also accepts the legacy `api_token` parameter. Prefer the header for new requ
   Keep a working V1 token when using this reference. If you no longer have your legacy token, [contact support](https://help.storerocket.io).
 </Note>
 
-## Project scope and IDs
+## Locator scope and IDs
 
-Every V1 request operates on the token owner's **personal project**. V1 URLs do not accept a project ID, and changing the project selected in the dashboard does not change this scope.
+Every V1 request operates on the token owner's **personal locator**. V1 URLs do not accept a locator ID, and changing the locator selected in the dashboard does not change this scope.
 
 Location and lead IDs are numeric database IDs returned as strings, such as `"12345"`. Use an ID returned by the matching V1 list endpoint. V2 public IDs are not interchangeable with V1 IDs.
 
-The personal project's plan must include REST API access.
+The personal locator's plan must include REST API access.
 
 ## V1 and V2 differences
 
 | Contract | V1 | V2 |
 | --- | --- | --- |
-| Location URLs | `/api/locations` | `/api/v2/projects/{project_id}/locations` |
+| Location URLs | `/api/locations` | `/api/v2/locators/{locator_id}/locations` |
 | Credentials | Existing legacy token | Token from the current API Tokens dashboard |
-| Project | Token owner's personal project | Project identified in the URL |
-| IDs | Numeric IDs, returned as strings | Public project and location IDs |
+| Locator | Token owner's personal locator | Locator identified in the URL |
+| IDs | Numeric IDs, returned as strings | Public locator and location IDs |
 | One location | Location object directly | `data` object containing the location |
 | Updates | PUT; `name` is required | PUT or partial PATCH |
 | Lead endpoints | List, read, and delete | No lead endpoints |
@@ -65,8 +65,8 @@ Send `Accept: application/json` on every request to receive JSON errors.
 | Status | Meaning | What to check |
 | --- | --- | --- |
 | `401` | Authentication failed | Use your V1 token, not a V2 token. |
-| `403` | REST API access is unavailable | Check the personal project's plan. |
-| `404` | Location or lead was not found | Check its V1 ID and project scope. |
+| `403` | REST API access is unavailable | Check the personal locator's plan. |
+| `404` | Location or lead was not found | Check its V1 ID and locator scope. |
 | `422` | A location write failed validation | Correct the fields listed in `errors`. |
 | `429` | Rate limit reached | Wait for the `Retry-After` period. |
 | `500` | The request could not be completed | Check the saved resource before retrying a write; contact support if it repeats. |

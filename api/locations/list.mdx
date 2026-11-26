@@ -1,12 +1,12 @@
 ---
 title: 'List locations'
 description: 'Read a paginated list with supported filters and optional relationships.'
-api: 'GET /api/v2/projects/{project_id}/locations'
+api: 'GET /api/v2/locators/{locator_id}/locations'
 ---
 
-Requires `location:read` and project API access. Returns a `data` array with pagination `links` and `meta`.
+Requires `location:read` and locator API access. Returns a `data` array with pagination `links` and `meta`.
 
-<ParamField path="project_id" type="string" required>The public project ID returned by [List projects](/api/projects).</ParamField>
+<ParamField path="locator_id" type="string" required>The public locator ID returned by [List locators](/api/projects).</ParamField>
 <ParamField query="page" type="number" default="1">Positive integer page number to retrieve.</ParamField>
 <ParamField query="limit" type="number" default="15">Integer page size from 1 to 100; larger values use the default size.</ParamField>
 <ParamField query="per_page" type="number" default="15">Same as `limit`. When both are sent, `limit` is used.</ParamField>
@@ -23,7 +23,7 @@ JavaScript examples run in Node.js 22 or later; PHP examples require PHP 8.2 or 
 <RequestExample>
 
 ```bash cURL
-curl --get 'https://storerocket.io/api/v2/projects/PROJECT_ID/locations' \
+curl --get 'https://storerocket.io/api/v2/locators/LOCATOR_ID/locations' \
   -H 'Authorization: Bearer YOUR_TOKEN' \
   -H 'Accept: application/json' \
   --data-urlencode 'limit=25' \
@@ -34,9 +34,9 @@ curl --get 'https://storerocket.io/api/v2/projects/PROJECT_ID/locations' \
 ```javascript JavaScript
 const token = process.env.STOREROCKET_TOKEN;
 if (!token) throw new Error("Set STOREROCKET_TOKEN first.");
-const projectId = "PROJECT_ID";
+const locatorId = "LOCATOR_ID";
 
-const url = new URL(`https://storerocket.io/api/v2/projects/${encodeURIComponent(projectId)}/locations`);
+const url = new URL(`https://storerocket.io/api/v2/locators/${encodeURIComponent(locatorId)}/locations`);
 url.searchParams.set("limit", "25");
 url.searchParams.set("city[eq]", "Seattle");
 url.searchParams.set("includeHours", "1");
@@ -57,9 +57,9 @@ console.log(JSON.parse(text));
 <?php
 
 $token = getenv("STOREROCKET_TOKEN") ?: throw new RuntimeException("Set STOREROCKET_TOKEN first.");
-$projectId = "PROJECT_ID";
+$locatorId = "LOCATOR_ID";
 
-$url = 'https://storerocket.io/api/v2/projects/' . rawurlencode($projectId) . '/locations';
+$url = 'https://storerocket.io/api/v2/locators/' . rawurlencode($locatorId) . '/locations';
 $url .= "?" . http_build_query([
     'limit' => 25,
     'city[eq]' => 'Seattle',
@@ -126,16 +126,16 @@ The example below uses `limit=1` with two locations. Location fields and `meta.l
     }
   ],
   "links": {
-    "first": "https://storerocket.io/api/v2/projects/PROJECT_ID/locations?limit=1&page=1",
-    "last": "https://storerocket.io/api/v2/projects/PROJECT_ID/locations?limit=1&page=2",
+    "first": "https://storerocket.io/api/v2/locators/LOCATOR_ID/locations?limit=1&page=1",
+    "last": "https://storerocket.io/api/v2/locators/LOCATOR_ID/locations?limit=1&page=2",
     "prev": null,
-    "next": "https://storerocket.io/api/v2/projects/PROJECT_ID/locations?limit=1&page=2"
+    "next": "https://storerocket.io/api/v2/locators/LOCATOR_ID/locations?limit=1&page=2"
   },
   "meta": {
     "current_page": 1,
     "from": 1,
     "last_page": 2,
-    "path": "https://storerocket.io/api/v2/projects/PROJECT_ID/locations",
+    "path": "https://storerocket.io/api/v2/locators/LOCATOR_ID/locations",
     "per_page": 1,
     "to": 1,
     "total": 2
@@ -146,4 +146,4 @@ The example below uses `limit=1` with two locations. Location fields and `meta.l
 
 Keep the same filters and include flags on every page. An empty result has `"data": []`; stop once `links.next` is null. The [sync guide](/api/sync-locations#read-every-page) includes a working pagination loop.
 
-Errors: `401` authentication, `403` access/permission, `404` inaccessible project, `429` rate limit. See [errors](/api/errors).
+Errors: `401` authentication, `403` access/permission, `404` inaccessible locator, `429` rate limit. See [errors](/api/errors).

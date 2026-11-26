@@ -7,14 +7,14 @@ Keep existing StoreRocket locations aligned with the information your system own
 
 ## Before you start
 
-Follow the [quickstart](/api/quickstart) to set `STOREROCKET_TOKEN` and `STOREROCKET_PROJECT_ID`. Your token needs `location:read` and `location:update`, and the project needs API access.
+Follow the [quickstart](/api/quickstart) to set `STOREROCKET_TOKEN` and `STOREROCKET_LOCATOR_ID`. Your token needs `location:read` and `location:update`, and the locator needs API access.
 JavaScript uses Node.js 22 or later. PHP uses PHP 8.2 or later with cURL. Run these examples on your server or from your terminal.
 
 Keep a mapping between each ID in your own system and the public StoreRocket location `id`. Read existing IDs from [List locations](/api/locations/list); when you [create a location](/api/locations/create), save its returned `data.id`. Names and addresses can change or be shared by multiple locations, so use IDs for matching.
 
 ## Prepare your changes
 
-Save a file named `changes.json` beside the script. Replace `LOCATION_ID` with an existing public location ID in this project. Include one object per location, containing only the fields you intend to change:
+Save a file named `changes.json` beside the script. Replace `LOCATION_ID` with an existing public location ID in this locator. Include one object per location, containing only the fields you intend to change:
 
 ```json changes.json
 [
@@ -39,8 +39,8 @@ An omitted `hours` value or `"hours": {}` preserves the schedule. `"hours": null
 
 Location lists are paginated. Each response has a `data` array and pagination `links` and `meta`; a request reads at most 100 locations. Both scripts keep `limit=100` and `includeHours=1` on each request and continue through `meta.last_page`.
 
-They check **every target ID before sending the first PATCH**. If any target is missing from the chosen project, the script stops without sending an update.
-Pagination reads the current data on each page; it is not a frozen snapshot. Run one sync per project at a time and avoid changing the location list while collecting IDs.
+They check **every target ID before sending the first PATCH**. If any target is missing from the chosen locator, the script stops without sending an update.
+Pagination reads the current data on each page; it is not a frozen snapshot. Run one sync per locator at a time and avoid changing the location list while collecting IDs.
 
 ## Copy the complete script
 
@@ -53,12 +53,12 @@ import { readFile } from "node:fs/promises";
 import { setTimeout as sleep } from "node:timers/promises";
 
 const token = process.env.STOREROCKET_TOKEN;
-const projectId = process.env.STOREROCKET_PROJECT_ID;
-if (!token || !projectId) {
-  throw new Error("Set STOREROCKET_TOKEN and STOREROCKET_PROJECT_ID first.");
+const locatorId = process.env.STOREROCKET_LOCATOR_ID;
+if (!token || !locatorId) {
+  throw new Error("Set STOREROCKET_TOKEN and STOREROCKET_LOCATOR_ID first.");
 }
 const baseUrl = "https://storerocket.io/api/v2";
-const path = `/projects/${encodeURIComponent(projectId)}/locations`;
+const path = `/locators/${encodeURIComponent(locatorId)}/locations`;
 const apply = process.argv.includes("--apply");
 const changes = JSON.parse(await readFile("changes.json", "utf8"));
 if (!Array.isArray(changes) || changes.some(change =>
@@ -115,7 +115,7 @@ do {
 // Check every ID before sending the first update.
 for (const change of changes) {
   if (!knownIds.has(change.id)) {
-    throw new Error(`Location ${change.id} was not found in this project. No updates sent.`);
+    throw new Error(`Location ${change.id} was not found in this locator. No updates sent.`);
   }
 }
 
@@ -134,12 +134,12 @@ console.log(apply ? "Sync complete." : "Preview complete. Run again with --apply
 <?php
 
 $token = getenv("STOREROCKET_TOKEN");
-$projectId = getenv("STOREROCKET_PROJECT_ID");
-if (!$token || !$projectId) {
-    throw new RuntimeException("Set STOREROCKET_TOKEN and STOREROCKET_PROJECT_ID first.");
+$locatorId = getenv("STOREROCKET_LOCATOR_ID");
+if (!$token || !$locatorId) {
+    throw new RuntimeException("Set STOREROCKET_TOKEN and STOREROCKET_LOCATOR_ID first.");
 }
 $baseUrl = "https://storerocket.io/api/v2";
-$path = "/projects/" . rawurlencode($projectId) . "/locations";
+$path = "/locators/" . rawurlencode($locatorId) . "/locations";
 $apply = in_array("--apply", $argv, true);
 
 // Decode objects as objects so an empty hours object stays {}, not [].
@@ -226,7 +226,7 @@ do {
 // Check every ID before sending the first update.
 foreach ($changes as $change) {
     if (!isset($knownIds[$change->id])) {
-        throw new RuntimeException("Location $change->id was not found in this project. No updates sent.");
+        throw new RuntimeException("Location $change->id was not found in this locator. No updates sent.");
     }
 }
 
@@ -261,7 +261,7 @@ php sync-locations.php
 
 </CodeGroup>
 
-The script reads your locations and prints `Would PATCH` with the ID and proposed fields. It sends no write requests in preview mode. Check the project, IDs, fields and any explicit clearing before applying.
+The script reads your locations and prints `Would PATCH` with the ID and proposed fields. It sends no write requests in preview mode. Check the locator, IDs, fields and any explicit clearing before applying.
 
 ## Apply the reviewed changes
 
@@ -283,7 +283,7 @@ Each successful PATCH returns `200`; the script prints `Updated` with the locati
 
 | Result | Script behavior | Your action |
 | --- | --- | --- |
-| `401`, `403` or `404` | Stops with the HTTP status and response body | Check token, permissions, project access and IDs |
+| `401`, `403` or `404` | Stops with the HTTP status and response body | Check token, permissions, locator access and IDs |
 | `422` | Stops and prints the field errors | Correct the rejected fields; that request saved no changes |
 | `429` | Waits for `Retry-After`, with at most four attempts per request | Space requests out if the shared limit is still being reached |
 | Connection error, timeout or `500` | Stops without automatically retrying the write | Read the affected location to check the result before restarting |

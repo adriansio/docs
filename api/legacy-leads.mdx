@@ -3,7 +3,7 @@ title: 'V1 leads'
 description: 'Read and delete leads captured by your StoreRocket locator.'
 ---
 
-These endpoints use [V1 authentication and project scope](/api/legacy). Use the legacy token from your existing integration, not a newly created V2 token.
+These endpoints use [V1 authentication and locator scope](/api/legacy). Use the legacy token from your existing integration, not a newly created V2 token.
 
 V1 provides **three lead endpoints**. There is no authenticated REST endpoint for creating or updating a lead, and V2 currently has no lead endpoints.
 
@@ -59,7 +59,7 @@ curl 'https://storerocket.io/api/leads/67890' \
   -H 'Accept: application/json'
 ```
 
-Returns `200` with the lead object directly, **without a `data` wrapper**. A lead outside the token owner's personal project returns `404`.
+Returns `200` with the lead object directly, **without a `data` wrapper**. A lead outside the token owner's personal locator returns `404`.
 
 ## Delete a lead
 

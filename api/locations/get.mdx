@@ -1,12 +1,12 @@
 ---
 title: 'Get a location'
 description: 'Read one location and its optional attached information.'
-api: 'GET /api/v2/projects/{project_id}/locations/{location_id}'
+api: 'GET /api/v2/locators/{locator_id}/locations/{location_id}'
 ---
 
-Requires `location:read` and project API access. The location must belong to the project in the URL.
+Requires `location:read` and locator API access. The location must belong to the locator in the URL.
 
-<ParamField path="project_id" type="string" required>The public project ID.</ParamField>
+<ParamField path="locator_id" type="string" required>The public locator ID.</ParamField>
 <ParamField path="location_id" type="string" required>The public location ID.</ParamField>
 <ParamField query="includeHours" type="number">Send `1` to include opening hours.</ParamField>
 <ParamField query="includeSpecialHours" type="number">Send `1` to include the [holiday and special hours](/api/special-hours#a-locations-resolved-dates) that apply to the location in the next two months. Read-only.</ParamField>
@@ -19,7 +19,7 @@ JavaScript examples run in Node.js 22 or later; PHP examples require PHP 8.2 or 
 <RequestExample>
 
 ```bash cURL
-curl --get 'https://storerocket.io/api/v2/projects/PROJECT_ID/locations/LOCATION_ID' \
+curl --get 'https://storerocket.io/api/v2/locators/LOCATOR_ID/locations/LOCATION_ID' \
   -H 'Authorization: Bearer YOUR_TOKEN' \
   -H 'Accept: application/json' \
   --data-urlencode 'includeHours=1' \
@@ -31,10 +31,10 @@ curl --get 'https://storerocket.io/api/v2/projects/PROJECT_ID/locations/LOCATION
 ```javascript JavaScript
 const token = process.env.STOREROCKET_TOKEN;
 if (!token) throw new Error("Set STOREROCKET_TOKEN first.");
-const projectId = "PROJECT_ID";
+const locatorId = "LOCATOR_ID";
 const locationId = "LOCATION_ID";
 
-const url = new URL(`https://storerocket.io/api/v2/projects/${encodeURIComponent(projectId)}/locations/${encodeURIComponent(locationId)}`);
+const url = new URL(`https://storerocket.io/api/v2/locators/${encodeURIComponent(locatorId)}/locations/${encodeURIComponent(locationId)}`);
 url.searchParams.set("includeHours", "1");
 url.searchParams.set("includeFilters", "1");
 url.searchParams.set("includeFields", "1");
@@ -56,10 +56,10 @@ console.log(JSON.parse(text));
 <?php
 
 $token = getenv("STOREROCKET_TOKEN") ?: throw new RuntimeException("Set STOREROCKET_TOKEN first.");
-$projectId = "PROJECT_ID";
+$locatorId = "LOCATOR_ID";
 $locationId = "LOCATION_ID";
 
-$url = 'https://storerocket.io/api/v2/projects/' . rawurlencode($projectId) . '/locations/' . rawurlencode($locationId);
+$url = 'https://storerocket.io/api/v2/locators/' . rawurlencode($locatorId) . '/locations/' . rawurlencode($locationId);
 $url .= "?" . http_build_query([
     'includeHours' => 1,
     'includeFilters' => 1,
@@ -139,4 +139,4 @@ The full resource also includes `slug`, `visible`, `display_address`, address co
 
 Custom fields and calls to action are **arrays in responses**, even though writes use named objects. Location responses do not include `created_at` or `updated_at`.
 
-Errors: `401` authentication, `403` access/permission, `404` inaccessible project or location, `429` rate limit. See [errors](/api/errors).
+Errors: `401` authentication, `403` access/permission, `404` inaccessible locator or location, `429` rate limit. See [errors](/api/errors).

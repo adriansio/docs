@@ -23,7 +23,7 @@ Open [API Tokens](https://storerocket.io/app/account/api-tokens) and create a to
 | Delete locations (`location:delete`) | Delete locations, one per call |
 | See analytics (`analytics:read`) | Read analytics: views, searches, searches that found nothing, clicks, leads |
 
-Through the MCP server, the token reaches the store locators your user account belongs to (each is a project in the REST API), on any plan. Calling the REST API directly still needs a plan that includes it. Revoke it from the same page at any time.
+Through the MCP server, the token reaches the store locators your user account belongs to, on any plan. Calling the REST API directly still needs a plan that includes it. Revoke it from the same page at any time.
 
 ## Connect your client
 
@@ -81,11 +81,11 @@ To disconnect an assistant, open [AI assistants](https://storerocket.io/app/inte
 
 ## Tools
 
-Start with `list-store-locators`: every other tool takes a `locator_id` from it (a 10-character id such as `Xn0pj9v86V`; it is the same id the REST API calls the project id). Location tools take a `location_id` from `list-locations`.
+Start with `list-store-locators`: every other tool takes a `locator_id` from it (a 10-character id such as `Xn0pj9v86V`; the REST API uses the same locator id). Location tools take a `location_id` from `list-locations`.
 
 | Tool | Title | What it does | Permission |
 | --- | --- | --- | --- |
-| `list-store-locators` | Your store locators | Your store locators (projects in the REST API): id, name, location count, status, plan | none |
+| `list-store-locators` | Your store locators | Your store locators: id, name, location count, status, plan | none |
 | `get-install-code` | Install code | The code that puts the locator on a website, placement steps, and whether it is live (last page seen in 30 days) | See locations |
 | `list-locations` | Find locations | Up to 100 per page, filtered by name, address, city, state, country or postal code; `include` adds hours, filters, fields or calls_to_action | See locations |
 | `get-location` | Location details | One location with hours, categories, custom fields and buttons | See locations |

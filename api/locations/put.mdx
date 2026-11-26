@@ -1,16 +1,16 @@
 ---
 title: 'Update with PUT'
 description: 'The existing update contract, retained for supported integrations.'
-api: 'PUT /api/v2/projects/{project_id}/locations/{location_id}'
+api: 'PUT /api/v2/locators/{locator_id}/locations/{location_id}'
 playground: 'simple'
 ---
 
-Requires `location:update` and project API access. `name` and `city` are required on each request; a street address is optional.
+Requires `location:update` and locator API access. `name` and `city` are required on each request; a street address is optional.
 For a change that should preserve all omitted choices, use [PATCH](/api/locations/update).
 
 <Note>Run write requests with the cURL, JavaScript or PHP examples. They change real location data. Use [PATCH](/api/locations/update) for new integrations that update selected fields.</Note>
 
-<ParamField path="project_id" type="string" required>The public project ID.</ParamField>
+<ParamField path="locator_id" type="string" required>The public locator ID.</ParamField>
 <ParamField path="location_id" type="string" required>The public location ID.</ParamField>
 <ParamField body="name" type="string" required>Location name.</ParamField>
 <ParamField body="city" type="string" required>Location city.</ParamField>
@@ -21,7 +21,7 @@ JavaScript examples run in Node.js 22 or later; PHP examples require PHP 8.2 or 
 <RequestExample>
 
 ```bash cURL
-curl -X PUT 'https://storerocket.io/api/v2/projects/PROJECT_ID/locations/LOCATION_ID' \
+curl -X PUT 'https://storerocket.io/api/v2/locators/LOCATOR_ID/locations/LOCATION_ID' \
   -H 'Authorization: Bearer YOUR_TOKEN' \
   -H 'Accept: application/json' \
   -H 'Content-Type: application/json' \
@@ -31,10 +31,10 @@ curl -X PUT 'https://storerocket.io/api/v2/projects/PROJECT_ID/locations/LOCATIO
 ```javascript JavaScript
 const token = process.env.STOREROCKET_TOKEN;
 if (!token) throw new Error("Set STOREROCKET_TOKEN first.");
-const projectId = "PROJECT_ID";
+const locatorId = "LOCATOR_ID";
 const locationId = "LOCATION_ID";
 
-const url = new URL(`https://storerocket.io/api/v2/projects/${encodeURIComponent(projectId)}/locations/${encodeURIComponent(locationId)}`);
+const url = new URL(`https://storerocket.io/api/v2/locators/${encodeURIComponent(locatorId)}/locations/${encodeURIComponent(locationId)}`);
 const response = await fetch(url, {
   method: "PUT",
   headers: {
@@ -59,10 +59,10 @@ console.log(JSON.parse(text));
 <?php
 
 $token = getenv("STOREROCKET_TOKEN") ?: throw new RuntimeException("Set STOREROCKET_TOKEN first.");
-$projectId = "PROJECT_ID";
+$locatorId = "LOCATOR_ID";
 $locationId = "LOCATION_ID";
 
-$url = 'https://storerocket.io/api/v2/projects/' . rawurlencode($projectId) . '/locations/' . rawurlencode($locationId);
+$url = 'https://storerocket.io/api/v2/locators/' . rawurlencode($locatorId) . '/locations/' . rawurlencode($locationId);
 
 $curl = curl_init($url);
 curl_setopt_array($curl, [
@@ -106,7 +106,7 @@ Returns `200` and the [location resource](/api/locations/get#response-format), w
 - Omitted scalar values generally remain saved; PUT does not have PATCH's preserve-all-omissions contract.
 - Supplied `fields` and `callsToAction` objects replace their respective attachments. Their omitted keys are removed; an empty object clears those attachments.
 - Supplied `filters` replaces the filter list; an empty list clears it. An omitted filter list is preserved.
-- Omitted marker and location-type selections use the project's defaults.
+- Omitted marker and location-type selections use the locator's defaults.
 - Omitted hours, null hours, and `{}` leave any existing hours unchanged. A nonempty hours object must include all seven days; it replaces the saved week.
 - Use PATCH for `hours:null` clearing or partial weekdays.
 - Changing the address moves the pin during the request, unless you send `lat` or `lng`. An address found only roughly, such as its town or postcode area, keeps the pin, and `geocoding.status` is `approximate`. Send `"lat": null, "lng": null` to clear the pin and geocode the address. PUT also geocodes synchronously when either coordinate is missing or zero. See [addresses and coordinates](/api/errors#addresses-and-coordinates).

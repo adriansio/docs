@@ -3,7 +3,7 @@ title: 'V1 locations'
 description: 'Read and manage locations through the supported legacy endpoints.'
 ---
 
-These endpoints use [V1 authentication and project scope](/api/legacy). Replace `YOUR_LEGACY_TOKEN` with the token from your existing V1 integration.
+These endpoints use [V1 authentication and locator scope](/api/legacy). Replace `YOUR_LEGACY_TOKEN` with the token from your existing V1 integration.
 
 | Method | Endpoint | Success |
 | --- | --- | --- |
@@ -68,7 +68,7 @@ curl 'https://storerocket.io/api/locations/12345' \
   -H 'Accept: application/json'
 ```
 
-Returns `200` and the location object directly, **without a `data` wrapper**. An ID outside the token owner's personal project returns `404`.
+Returns `200` and the location object directly, **without a `data` wrapper**. An ID outside the token owner's personal locator returns `404`.
 
 ## Create a location
 
@@ -112,11 +112,11 @@ curl -X PUT 'https://storerocket.io/api/locations/12345' \
   }'
 ```
 
-Use the location's current name and location-type name. The `Standard` value above is illustrative; use a type configured in your project.
+Use the location's current name and location-type name. The `Standard` value above is illustrative; use a type configured in your locator.
 
 Returns `200` with the updated location object, without a `data` wrapper.
 
-Omitted basic fields keep their saved values. **`location_type` is an exception:** omitting it, setting it to null, or sending an unmatched name selects the project default. Include its current name to preserve a nondefault type.
+Omitted basic fields keep their saved values. **`location_type` is an exception:** omitting it, setting it to null, or sending an unmatched name selects the locator default. Include its current name to preserve a nondefault type.
 
 Send `null` to clear an optional contact or social field, such as `phone`, `email`, or `twitter`. An empty string is treated as null. Clearing `address` or `display_address` regenerates it from the available address information.
 
@@ -139,7 +139,7 @@ POST and PUT accept these fields:
 | `lat` | Number from `-90` to `90`, or null |
 | `lng` | Number from `-180` to `180`, or null |
 | `visible` | Boolean `true` or `false` |
-| `location_type` | Existing location-type name; otherwise the project default |
+| `location_type` | Existing location-type name; otherwise the locator default |
 | `facebook`, `instagram`, `twitter`, `yelp` | Profile handle or profile URL |
 | `youtube`, `tiktok` | Profile handle or profile URL |
 

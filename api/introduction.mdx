@@ -3,9 +3,9 @@ title: 'Overview'
 description: 'The current API, its endpoints, and how updates work.'
 ---
 
-The StoreRocket REST API lets you list your projects and create, read, update, and delete their locations.
+The StoreRocket REST API lets you list your locators and create, read, update, and delete their locations.
 Start with the [quickstart](/api/quickstart) for runnable cURL, JavaScript and PHP examples, or follow the [sync guide](/api/sync-locations) to automate updates.
-Location operations require a project with API access, available on the Business plan.
+Location operations require a locator with API access, available on the Business plan.
 
 ## Base URL
 
@@ -16,30 +16,32 @@ https://storerocket.io/api/v2
 Use an [API token](/api/authentication) in the `Authorization` header. Send JSON request bodies with `Content-Type: application/json`. `Accept: application/json` is recommended; V2 errors return JSON even when it is omitted.
 
 ```bash
-curl 'https://storerocket.io/api/v2/projects' \
+curl 'https://storerocket.io/api/v2/locators' \
   -H 'Authorization: Bearer YOUR_TOKEN' \
   -H 'Accept: application/json'
 ```
 
-Project and location IDs are the public IDs returned by the API. Keep them as strings.
+Locator and location IDs are the public IDs returned by the API. Keep them as strings.
+
+The older `/api/v2/projects/...` paths keep working and return the same responses. New integrations should use `/api/v2/locators/...`.
 
 ## Endpoints
 
 | Method | Path | Purpose |
 | --- | --- | --- |
 | GET | `/user` | [Read your user profile](/api/user) |
-| GET | `/projects` | [List your projects](/api/projects) |
-| GET | `/projects/{project_id}/locations` | [List locations](/api/locations/list) |
-| GET | `/projects/{project_id}/locations/{location_id}` | [Read a location](/api/locations/get) |
-| POST | `/projects/{project_id}/locations` | [Create a location](/api/locations/create) |
-| PATCH | `/projects/{project_id}/locations/{location_id}` | [Update selected fields](/api/locations/update) |
-| PUT | `/projects/{project_id}/locations/{location_id}` | [Use the existing update contract](/api/locations/put) |
-| DELETE | `/projects/{project_id}/locations/{location_id}` | [Delete a location](/api/locations/delete) |
+| GET | `/locators` | [List your locators](/api/projects) |
+| GET | `/locators/{locator_id}/locations` | [List locations](/api/locations/list) |
+| GET | `/locators/{locator_id}/locations/{location_id}` | [Read a location](/api/locations/get) |
+| POST | `/locators/{locator_id}/locations` | [Create a location](/api/locations/create) |
+| PATCH | `/locators/{locator_id}/locations/{location_id}` | [Update selected fields](/api/locations/update) |
+| PUT | `/locators/{locator_id}/locations/{location_id}` | [Use the existing update contract](/api/locations/put) |
+| DELETE | `/locators/{locator_id}/locations/{location_id}` | [Delete a location](/api/locations/delete) |
 
 ## Use PATCH for partial updates
 
 ```bash
-curl -X PATCH 'https://storerocket.io/api/v2/projects/PROJECT_ID/locations/LOCATION_ID' \
+curl -X PATCH 'https://storerocket.io/api/v2/locators/LOCATOR_ID/locations/LOCATION_ID' \
   -H 'Authorization: Bearer YOUR_TOKEN' \
   -H 'Accept: application/json' \
   -H 'Content-Type: application/json' \
@@ -48,7 +50,7 @@ curl -X PATCH 'https://storerocket.io/api/v2/projects/PROJECT_ID/locations/LOCAT
 
 Fields you omit keep their saved values. A successful update returns `200` and the location. Invalid input returns `422` with field errors and saves no part of the update.
 
-`POST` and `PUT` retain their existing requirements, including `name` and `city`. `PUT` can replace supplied custom-field and call-to-action attachments and reset omitted marker/type selections to project defaults. Use [PATCH](/api/locations/update) when you want to preserve everything you leave out.
+`POST` and `PUT` retain their existing requirements, including `name` and `city`. `PUT` can replace supplied custom-field and call-to-action attachments and reset omitted marker/type selections to locator defaults. Use [PATCH](/api/locations/update) when you want to preserve everything you leave out.
 
 ## Locations without opening hours
 
@@ -62,4 +64,4 @@ The current API uses a shared limit of 1,000 requests per minute. Read the respo
 ## Existing integrations
 
 [V1 remains a separate legacy contract](/api/legacy). These pages do not change your existing URLs or require an API migration.
-The examples use placeholders. Replace `YOUR_TOKEN`, `PROJECT_ID`, and `LOCATION_ID` with your own values before running a request.
+The examples use placeholders. Replace `YOUR_TOKEN`, `LOCATOR_ID`, and `LOCATION_ID` with your own values before running a request.

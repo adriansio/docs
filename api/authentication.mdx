@@ -7,14 +7,14 @@ description: 'Create a token, choose permissions, and authenticate requests.'
 
 Open [API Tokens](https://storerocket.io/app/api-tokens), create a token, and copy it securely. The full token is shown only when it is created.
 
-The token belongs to your user account and can access projects that account belongs to. Location endpoints also check the project's API access and the token's permissions.
+The token belongs to your user account and can access locators that account belongs to. Location endpoints also check the locator's API access and the token's permissions.
 
 ## Send the token
 
 <CodeGroup>
 
 ```bash cURL
-curl 'https://storerocket.io/api/v2/projects' \
+curl 'https://storerocket.io/api/v2/locators' \
   -H 'Authorization: Bearer YOUR_TOKEN' \
   -H 'Accept: application/json'
 ```
@@ -23,7 +23,7 @@ curl 'https://storerocket.io/api/v2/projects' \
 const token = process.env.STOREROCKET_TOKEN;
 if (!token) throw new Error("Set STOREROCKET_TOKEN first.");
 
-const url = new URL(`https://storerocket.io/api/v2/projects`);
+const url = new URL(`https://storerocket.io/api/v2/locators`);
 const response = await fetch(url, {
   headers: {
     Authorization: `Bearer ${token}`,
@@ -42,7 +42,7 @@ console.log(JSON.parse(text));
 
 $token = getenv("STOREROCKET_TOKEN") ?: throw new RuntimeException("Set STOREROCKET_TOKEN first.");
 
-$url = 'https://storerocket.io/api/v2/projects';
+$url = 'https://storerocket.io/api/v2/locators';
 
 $curl = curl_init($url);
 curl_setopt_array($curl, [
@@ -97,4 +97,4 @@ A missing, expired, revoked, or invalid token returns `401`:
 {"message":"Unauthenticated."}
 ```
 
-A valid token without the required permission, or a project without API access, returns `403`. A project or location outside your access returns `404`. See [errors](/api/errors).
+A valid token without the required permission, or a locator without API access, returns `403`. A locator or location outside your access returns `404`. See [errors](/api/errors).

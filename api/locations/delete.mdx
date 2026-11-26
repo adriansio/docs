@@ -1,15 +1,15 @@
 ---
 title: 'Delete a location'
-description: 'Remove a location from a project.'
-api: 'DELETE /api/v2/projects/{project_id}/locations/{location_id}'
+description: 'Remove a location from a locator.'
+api: 'DELETE /api/v2/locators/{locator_id}/locations/{location_id}'
 playground: 'simple'
 ---
 
-Requires `location:delete` and project API access. The location must belong to the project in the URL.
+Requires `location:delete` and locator API access. The location must belong to the locator in the URL.
 
 <Warning>This request deletes a real location. Run the cURL, JavaScript or PHP example only with a location you created for testing.</Warning>
 
-<ParamField path="project_id" type="string" required>The public project ID.</ParamField>
+<ParamField path="locator_id" type="string" required>The public locator ID.</ParamField>
 <ParamField path="location_id" type="string" required>The public location ID.</ParamField>
 
 JavaScript examples run in Node.js 22 or later; PHP examples require PHP 8.2 or later with cURL. Both read `STOREROCKET_TOKEN` from your environment. See the [quickstart](/api/quickstart) for setup.
@@ -17,7 +17,7 @@ JavaScript examples run in Node.js 22 or later; PHP examples require PHP 8.2 or 
 <RequestExample>
 
 ```bash cURL
-curl -X DELETE 'https://storerocket.io/api/v2/projects/PROJECT_ID/locations/LOCATION_ID' \
+curl -X DELETE 'https://storerocket.io/api/v2/locators/LOCATOR_ID/locations/LOCATION_ID' \
   -H 'Authorization: Bearer YOUR_TOKEN' \
   -H 'Accept: application/json'
 ```
@@ -25,10 +25,10 @@ curl -X DELETE 'https://storerocket.io/api/v2/projects/PROJECT_ID/locations/LOCA
 ```javascript JavaScript
 const token = process.env.STOREROCKET_TOKEN;
 if (!token) throw new Error("Set STOREROCKET_TOKEN first.");
-const projectId = "PROJECT_ID";
+const locatorId = "LOCATOR_ID";
 const locationId = "LOCATION_ID";
 
-const url = new URL(`https://storerocket.io/api/v2/projects/${encodeURIComponent(projectId)}/locations/${encodeURIComponent(locationId)}`);
+const url = new URL(`https://storerocket.io/api/v2/locators/${encodeURIComponent(locatorId)}/locations/${encodeURIComponent(locationId)}`);
 const response = await fetch(url, {
   method: "DELETE",
   headers: {
@@ -47,10 +47,10 @@ console.log(JSON.parse(text));
 <?php
 
 $token = getenv("STOREROCKET_TOKEN") ?: throw new RuntimeException("Set STOREROCKET_TOKEN first.");
-$projectId = "PROJECT_ID";
+$locatorId = "LOCATOR_ID";
 $locationId = "LOCATION_ID";
 
-$url = 'https://storerocket.io/api/v2/projects/' . rawurlencode($projectId) . '/locations/' . rawurlencode($locationId);
+$url = 'https://storerocket.io/api/v2/locators/' . rawurlencode($locatorId) . '/locations/' . rawurlencode($locationId);
 
 $curl = curl_init($url);
 curl_setopt_array($curl, [
@@ -87,5 +87,5 @@ echo json_encode($data, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR), PHP_EOL;
 ```
 </ResponseExample>
 
-A successful deletion returns `200`. The location is removed from the project and its widget results.
-Errors: `401` authentication, `403` access/permission, `404` inaccessible project or location, `429` rate limit. See [errors](/api/errors).
+A successful deletion returns `200`. The location is removed from the locator and its widget results.
+Errors: `401` authentication, `403` access/permission, `404` inaccessible locator or location, `429` rate limit. See [errors](/api/errors).
