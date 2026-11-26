@@ -1,17 +1,17 @@
 ---
-title: 'List projects'
-description: 'Find the public project IDs available to your account.'
-api: 'GET /api/v2/projects'
+title: 'List locators'
+description: 'Find the public locator IDs available to your account.'
+api: 'GET /api/v2/locators'
 ---
 
-Returns projects that the authenticated user belongs to. Use the returned `id` in location URLs.
+Returns locators that the authenticated user belongs to. Use the returned `id` in location URLs.
 
 JavaScript examples run in Node.js 22 or later; PHP examples require PHP 8.2 or later with cURL. Both read `STOREROCKET_TOKEN` from your environment. See the [quickstart](/api/quickstart) for setup.
 
 <RequestExample>
 
 ```bash cURL
-curl 'https://storerocket.io/api/v2/projects' \
+curl 'https://storerocket.io/api/v2/locators' \
   -H 'Authorization: Bearer YOUR_TOKEN' \
   -H 'Accept: application/json'
 ```
@@ -20,7 +20,7 @@ curl 'https://storerocket.io/api/v2/projects' \
 const token = process.env.STOREROCKET_TOKEN;
 if (!token) throw new Error("Set STOREROCKET_TOKEN first.");
 
-const url = new URL(`https://storerocket.io/api/v2/projects`);
+const url = new URL(`https://storerocket.io/api/v2/locators`);
 const response = await fetch(url, {
   headers: {
     Authorization: `Bearer ${token}`,
@@ -39,7 +39,7 @@ console.log(JSON.parse(text));
 
 $token = getenv("STOREROCKET_TOKEN") ?: throw new RuntimeException("Set STOREROCKET_TOKEN first.");
 
-$url = 'https://storerocket.io/api/v2/projects';
+$url = 'https://storerocket.io/api/v2/locators';
 
 $curl = curl_init($url);
 curl_setopt_array($curl, [
@@ -74,8 +74,8 @@ echo json_encode($data, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR), PHP_EOL;
 {
   "data": [
     {
-      "id": "PROJECT_ID",
-      "name": "My Project",
+      "id": "LOCATOR_ID",
+      "name": "My Locator",
       "locations": 12,
       "status": "active",
       "plan": "Business"
@@ -85,4 +85,4 @@ echo json_encode($data, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR), PHP_EOL;
 ```
 </ResponseExample>
 
-A successful request returns `200`. An invalid token returns `401`. Location operations additionally check API access for the selected project.
+A successful request returns `200`. An invalid token returns `401`. Location operations additionally check API access for the selected locator.

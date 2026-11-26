@@ -1,17 +1,17 @@
 ---
 title: 'Update selected fields'
 description: 'Change selected fields and clear values without resending the location.'
-api: 'PATCH /api/v2/projects/{project_id}/locations/{location_id}'
+api: 'PATCH /api/v2/locators/{locator_id}/locations/{location_id}'
 playground: 'simple'
 ---
 
-Requires `location:update` and project API access. Send a JSON object containing only the fields you want to change. Omitted inputs and attachments keep their saved values; generated addresses can refresh when address components change, as described below.
+Requires `location:update` and locator API access. Send a JSON object containing only the fields you want to change. Omitted inputs and attachments keep their saved values; generated addresses can refresh when address components change, as described below.
 Returns `200` and the [updated location](/api/locations/get#response-format), with a [`geocoding`](/api/errors#the-geocoding-object) object next to `data`: `queued` when the update queued an address lookup, otherwise `null`.
 
 <Note>Run write requests with the cURL, JavaScript or PHP examples. They change real location data; use a location you created for testing.</Note>
 
-<ParamField path="project_id" type="string" required>The public project ID.</ParamField>
-<ParamField path="location_id" type="string" required>The public location ID belonging to the project.</ParamField>
+<ParamField path="locator_id" type="string" required>The public locator ID.</ParamField>
+<ParamField path="location_id" type="string" required>The public location ID belonging to the locator.</ParamField>
 <ParamField body="phone" type="string | null">Change the phone, or send null to clear it.</ParamField>
 <ParamField body="name" type="string">If supplied, a nonempty string of at most 255 characters.</ParamField>
 <ParamField body="city" type="string">If supplied, a nonempty string of at most 255 characters.</ParamField>
@@ -26,7 +26,7 @@ JavaScript examples run in Node.js 22 or later; PHP examples require PHP 8.2 or 
 <RequestExample>
 
 ```bash cURL
-curl -X PATCH 'https://storerocket.io/api/v2/projects/PROJECT_ID/locations/LOCATION_ID' \
+curl -X PATCH 'https://storerocket.io/api/v2/locators/LOCATOR_ID/locations/LOCATION_ID' \
   -H 'Authorization: Bearer YOUR_TOKEN' \
   -H 'Accept: application/json' \
   -H 'Content-Type: application/json' \
@@ -36,10 +36,10 @@ curl -X PATCH 'https://storerocket.io/api/v2/projects/PROJECT_ID/locations/LOCAT
 ```javascript JavaScript
 const token = process.env.STOREROCKET_TOKEN;
 if (!token) throw new Error("Set STOREROCKET_TOKEN first.");
-const projectId = "PROJECT_ID";
+const locatorId = "LOCATOR_ID";
 const locationId = "LOCATION_ID";
 
-const url = new URL(`https://storerocket.io/api/v2/projects/${encodeURIComponent(projectId)}/locations/${encodeURIComponent(locationId)}`);
+const url = new URL(`https://storerocket.io/api/v2/locators/${encodeURIComponent(locatorId)}/locations/${encodeURIComponent(locationId)}`);
 const response = await fetch(url, {
   method: "PATCH",
   headers: {
@@ -62,10 +62,10 @@ console.log(JSON.parse(text));
 <?php
 
 $token = getenv("STOREROCKET_TOKEN") ?: throw new RuntimeException("Set STOREROCKET_TOKEN first.");
-$projectId = "PROJECT_ID";
+$locatorId = "LOCATOR_ID";
 $locationId = "LOCATION_ID";
 
-$url = 'https://storerocket.io/api/v2/projects/' . rawurlencode($projectId) . '/locations/' . rawurlencode($locationId);
+$url = 'https://storerocket.io/api/v2/locators/' . rawurlencode($locatorId) . '/locations/' . rawurlencode($locationId);
 
 $curl = curl_init($url);
 curl_setopt_array($curl, [
@@ -105,7 +105,7 @@ You do not need to resend the name, city, hours, filters, or other saved informa
 ## Test an update
 
 1. [Read your test location](/api/locations/get) with `includeHours=1` and record its phone, name, city and hours.
-2. Replace `PROJECT_ID`, `LOCATION_ID` and `YOUR_TOKEN` in the cURL example. JavaScript and PHP use `STOREROCKET_TOKEN` from the [quickstart](/api/quickstart).
+2. Replace `LOCATOR_ID`, `LOCATION_ID` and `YOUR_TOKEN` in the cURL example. JavaScript and PHP use `STOREROCKET_TOKEN` from the [quickstart](/api/quickstart).
 3. Run the example. Expect `200` with `data.phone` set to `555-0101`.
 4. Read the same location again with `includeHours=1`. The phone has changed; the omitted name, city and hours are unchanged.
 
@@ -150,10 +150,10 @@ Supplied keys are added or updated; omitted keys keep their attachments. A key w
 | Supply `filters` | Replace the list |
 | `"filters": []` or null | Clear the list |
 | Omit `marker_id` or `location_type` | Keep the selection |
-| `"marker_id": null` or `"location_type": null` | Restore the corresponding project default |
+| `"marker_id": null` or `"location_type": null` | Restore the corresponding locator default |
 | `"cover": null` | Clear the cover association and external cover URL |
 
-A supplied marker ID, location-type name, or stored cover image must belong to this project. An invalid selection returns `422` and saves nothing.
+A supplied marker ID, location-type name, or stored cover image must belong to this locator. An invalid selection returns `422` and saves nothing.
 
 ## Other fields and generated values
 

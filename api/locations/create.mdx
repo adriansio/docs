@@ -1,15 +1,15 @@
 ---
 title: 'Create a location'
 description: 'Add a location, with or without a street address or opening hours.'
-api: 'POST /api/v2/projects/{project_id}/locations'
+api: 'POST /api/v2/locators/{locator_id}/locations'
 playground: 'simple'
 ---
 
-Requires `location:create` and project API access. Returns `200` and the [location resource](/api/locations/get#response-format), with a [`geocoding`](/api/errors#the-geocoding-object) object next to `data` describing the address lookup.
+Requires `location:create` and locator API access. Returns `200` and the [location resource](/api/locations/get#response-format), with a [`geocoding`](/api/errors#the-geocoding-object) object next to `data` describing the address lookup.
 
 <Note>Run this request with the cURL, JavaScript or PHP examples. It creates a real location; the example sets `visible` to `false` so it stays hidden from the locator.</Note>
 
-<ParamField path="project_id" type="string" required>The public project ID.</ParamField>
+<ParamField path="locator_id" type="string" required>The public locator ID.</ParamField>
 <ParamField body="name" type="string" required>Location name.</ParamField>
 <ParamField body="city" type="string" required>City. A street address is optional.</ParamField>
 <ParamField body="address_line_1" type="string">Street address.</ParamField>
@@ -30,7 +30,7 @@ JavaScript examples run in Node.js 22 or later; PHP examples require PHP 8.2 or 
 <RequestExample>
 
 ```bash cURL
-curl -X POST 'https://storerocket.io/api/v2/projects/PROJECT_ID/locations' \
+curl -X POST 'https://storerocket.io/api/v2/locators/LOCATOR_ID/locations' \
   -H 'Authorization: Bearer YOUR_TOKEN' \
   -H 'Accept: application/json' \
   -H 'Content-Type: application/json' \
@@ -47,9 +47,9 @@ curl -X POST 'https://storerocket.io/api/v2/projects/PROJECT_ID/locations' \
 ```javascript JavaScript
 const token = process.env.STOREROCKET_TOKEN;
 if (!token) throw new Error("Set STOREROCKET_TOKEN first.");
-const projectId = "PROJECT_ID";
+const locatorId = "LOCATOR_ID";
 
-const url = new URL(`https://storerocket.io/api/v2/projects/${encodeURIComponent(projectId)}/locations`);
+const url = new URL(`https://storerocket.io/api/v2/locators/${encodeURIComponent(locatorId)}/locations`);
 const response = await fetch(url, {
   method: "POST",
   headers: {
@@ -77,9 +77,9 @@ console.log(JSON.parse(text));
 <?php
 
 $token = getenv("STOREROCKET_TOKEN") ?: throw new RuntimeException("Set STOREROCKET_TOKEN first.");
-$projectId = "PROJECT_ID";
+$locatorId = "LOCATOR_ID";
 
-$url = 'https://storerocket.io/api/v2/projects/' . rawurlencode($projectId) . '/locations';
+$url = 'https://storerocket.io/api/v2/locators/' . rawurlencode($locatorId) . '/locations';
 
 $curl = curl_init($url);
 curl_setopt_array($curl, [
@@ -154,9 +154,9 @@ Do not send an hours array or weekday objects containing `open`/`close` keys.
 | `filters` | Filter names as a list or comma-separated string |
 | `fields` | Named custom-field object, such as `{"Manager":"Sam"}` |
 | `callsToAction` | Named object, such as `{"Book":"https://example.com/book"}` |
-| `location_type` | Name of a location type in the project |
-| `marker_id` | Integer ID of a marker in the project |
-| `cover` | Image URL or the project's stored image name |
+| `location_type` | Name of a location type in the locator |
+| `marker_id` | Integer ID of a marker in the locator |
+| `cover` | Image URL or the locator's stored image name |
 
 The response's `socials` list is derived; send individual public social field names when writing.
 POST can geocode synchronously when either coordinate is missing or zero. Supplying both nonzero coordinates avoids depending on a geocoding result. Check `geocoding.status` in the response: `approximate` means only a rough match was found, such as the town or postcode area, and the location was placed there. Zero passes validation, but POST and PUT retain this older geocoding behavior; PATCH preserves supplied zero coordinates.

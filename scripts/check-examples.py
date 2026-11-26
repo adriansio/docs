@@ -19,18 +19,18 @@ BLOCKS = {page: re.findall(r"^```(\w+)([^\n]*)\n(.*?)^```", (ROOT / (page + ".md
           for page in PAGES}
 REFERENCE = {
     "api/user": ("GET", "/user", {}, None),
-    "api/projects": ("GET", "/projects", {}, None),
-    "api/locations/list": ("GET", "/projects/PROJECT_ID/locations",
+    "api/projects": ("GET", "/locators", {}, None),
+    "api/locations/list": ("GET", "/locators/LOCATOR_ID/locations",
                            {"limit": ["25"], "city[eq]": ["Seattle"], "includeHours": ["1"]}, None),
-    "api/locations/get": ("GET", "/projects/PROJECT_ID/locations/LOCATION_ID",
+    "api/locations/get": ("GET", "/locators/LOCATOR_ID/locations/LOCATION_ID",
                           {name: ["1"] for name in ("includeHours", "includeFilters", "includeFields", "includeCallsToAction")}, None),
-    "api/locations/create": ("POST", "/projects/PROJECT_ID/locations", {},
+    "api/locations/create": ("POST", "/locators/LOCATOR_ID/locations", {},
                              {"name": "Coming Soon Store", "city": "Seattle", "lat": 47.6062,
                               "lng": -122.3321, "visible": False, "hours": {}}),
-    "api/locations/update": ("PATCH", "/projects/PROJECT_ID/locations/LOCATION_ID", {}, {"phone": "555-0101"}),
-    "api/locations/put": ("PUT", "/projects/PROJECT_ID/locations/LOCATION_ID", {},
+    "api/locations/update": ("PATCH", "/locators/LOCATOR_ID/locations/LOCATION_ID", {}, {"phone": "555-0101"}),
+    "api/locations/put": ("PUT", "/locators/LOCATOR_ID/locations/LOCATION_ID", {},
                           {"name": "Downtown Store", "city": "Seattle", "phone": "555-0101"}),
-    "api/locations/delete": ("DELETE", "/projects/PROJECT_ID/locations/LOCATION_ID", {}, None),
+    "api/locations/delete": ("DELETE", "/locators/LOCATOR_ID/locations/LOCATION_ID", {}, None),
 }
 state = {}
 checks = 0
@@ -74,8 +74,8 @@ class Fixture(BaseHTTPRequestHandler):
                 data = []
             response = {"data": data, "links": {"next": None if page == 2 or mode == "empty" else "page2"},
                         "meta": {"current_page": page, "last_page": 1 if mode == "empty" else 2}}
-        elif self.command == "GET" and parsed.path.endswith("/projects"):
-            response = {"data": [{"id": "PROJECT_ID", "name": "Fixture project"}]}
+        elif self.command == "GET" and parsed.path.endswith("/locators"):
+            response = {"data": [{"id": "LOCATOR_ID", "name": "Fixture locator"}]}
         elif self.command == "DELETE":
             response = {"success": True}
         elif self.command == "PATCH":
@@ -112,7 +112,7 @@ def run(code, language, mode="ok", changes=None, apply=False, token="fixture-onl
     filename.write_text(code)
     if changes is not None:
         (directory / "changes.json").write_text(json.dumps(changes))
-    env = {**os.environ, "STOREROCKET_TOKEN": token, "STOREROCKET_PROJECT_ID": "PROJECT_ID"}
+    env = {**os.environ, "STOREROCKET_TOKEN": token, "STOREROCKET_LOCATOR_ID": "LOCATOR_ID"}
     command = ["node" if language == "javascript" else "php", str(filename)]
     if apply:
         command.append("--apply")
